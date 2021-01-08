@@ -1,0 +1,4 @@
+GPSmodel.c:29:6:GPS_init	0	static
+GPSmodel.c:78:6:GPS_update_GNGGA	24	static
+GPSmodel.c:41:6:GPS_update	0	static
+GPSmodel.c:106:6:NMEA_deg2dec	16	static

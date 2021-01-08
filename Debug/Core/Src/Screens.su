@@ -1,0 +1,8 @@
+Screens.c:16:9:u8x8_byte_stm32hal_hw_i2c	32	static
+Screens.c:62:9:psoc_gpio_and_delay_cb	16	static
+Screens.c:119:9:draw_button_line	64	static
+Screens.c:167:6:Screen_init	8	static
+Screens.c:202:6:draw_screen_time	32	static
+Screens.c:257:6:draw_screen_ubic	16	static
+Screens.c:181:6:Screen_update	16	static
+Screens.c:281:6:test_screen	136	static
