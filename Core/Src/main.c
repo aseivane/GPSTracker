@@ -72,6 +72,7 @@ uint8_t usart_rx_dma_buffer[MAX_NMEA_LEN];
 uint8_t time_updated = 0;
 uint8_t date_updated = 0;
 uint8_t screen_number;
+uint8_t GPSupdated = 0;
 uint8_t screen_power = 0;
 uint8_t button_pressed=0;
 uint32_t longPress;
@@ -103,9 +104,10 @@ void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
 	mili = HAL_GetTick();
 	char tiempo[sizeof(uint32_t)*8+1];*/
 
-
+	HAL_UART_Transmit(&huart1, "Idle\r\n", strlen("Idle\r\n"),1000);
 	update_GPS_from_NMEA();
 	Screen_update();
+	GPSupdated = 1;
 
 	/*
 	sprintf(tiempo, "%lu",HAL_GetTick()-mili);
@@ -188,8 +190,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
   Screen_init(&u8g2);
 
-  HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);
+  HAL_Delay(1000);
 
+  GPS_init(&gps);
+  configure_GPS();
+
+  HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);
+  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE); 			// enable idle line interrupt
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -198,13 +205,19 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-	__HAL_UART_DISABLE_IT(UART1, UART_IT_IDLE);
-	log_data();
-	HAL_UART_Transmit(&huart1, "logged\r\n", strlen("logged\r\n"),1000);
-	__HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);
+
+	if(GPSupdated)
+	{
+		__HAL_UART_DISABLE_IT(UART1, UART_IT_IDLE);
+		log_data();
+		GPSupdated = 0;
+		//HAL_UART_Transmit(&huart1, "logged\r\n", strlen("logged\r\n"),1000);
+		__HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);
+		//HAL_Delay(2000);
+	}
+
 
 	check_buttons();
-	HAL_Delay(2000);
 
     /* USER CODE BEGIN 3 */
   }
@@ -439,7 +452,7 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE); 			// enable idle line interrupt
+
   /* USER CODE END USART1_Init 2 */
 
 }

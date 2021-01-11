@@ -8,7 +8,6 @@
 #ifndef INC_SCREENS_H_
 #define INC_SCREENS_H_
 
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

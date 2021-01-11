@@ -32,10 +32,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../Core/Inc/GPSmodel.h ../Core/Inc/tools.h ../Core/Inc/GPScontroller.h \
- ../Core/Inc/fatfs_sd.h ../Core/Src/u8g2/u8g2.h ../Core/Src/u8g2/u8x8.h \
- ../Core/Inc/Screens.h ../Core/Inc/main.h ../Core/Inc/GPSmodel.h \
- ../Core/Inc/u8g2.h ../Core/Inc/SDlogging.h
+ ../Core/Inc/GPSmodel.h ../Core/Inc/tools.h ../Core/Inc/main.h \
+ ../Core/Inc/GPScontroller.h ../Core/Inc/fatfs_sd.h \
+ ../Core/Src/u8g2/u8g2.h ../Core/Src/u8g2/u8x8.h ../Core/Inc/Screens.h \
+ ../Core/Inc/GPSmodel.h ../Core/Inc/u8g2.h ../Core/Inc/SDlogging.h
 
 ../Core/Inc/main.h:
 
@@ -115,6 +115,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/tools.h:
 
+../Core/Inc/main.h:
+
 ../Core/Inc/GPScontroller.h:
 
 ../Core/Inc/fatfs_sd.h:
@@ -124,8 +126,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Src/u8g2/u8x8.h:
 
 ../Core/Inc/Screens.h:
-
-../Core/Inc/main.h:
 
 ../Core/Inc/GPSmodel.h:
 

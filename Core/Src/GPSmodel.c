@@ -94,13 +94,13 @@ void GPS_update_GNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 	if(*(fields[EoW])== 'W')
 			self->longitude = -self->longitude;
 
-	self->GPS_fix = (uint8_t) strtol(fields[FIX], NULL, 10);
+	self->GPS_fix = (uint8_t) ascii_to_int(fields[FIX]);
 
-	self->satellites_in_view = (uint8_t) strtol(fields[SIV], NULL, 10);
+	self->satellites_in_view = (uint8_t) ascii_to_int(fields[SIV]);
 
-	self->HDOP = (uint8_t) strtol(fields[HDOP], NULL, 10);
+	self->HDOP = (uint8_t) ascii_to_int(fields[HDOP]);
 
-	self->altitude = (uint8_t) strtol(fields[ALTTUDE_METER], NULL, 10);
+	self->altitude = (uint8_t) ascii_to_int(fields[ALTTUDE_METER]);
 }
 
 void NMEA_deg2dec(float* number)
@@ -108,8 +108,9 @@ void NMEA_deg2dec(float* number)
 	//if(!*number) return;
 	*number/=100;
 	int integer = (int) *number;//grados
-	*number = *number - integer;// quedan solo los minutos y sus decimales
-	*number = (float) integer + (*number)*(10/6); //a los grados le agrega los minutos /60 para que sean grados
+	*number = (*number - (float)integer)*100;// quedan solo los minutos y sus decimales
+	*number /=60;
+	*number = (float) integer + (*number); //a los grados le agrega los minutos /60 para que sean grados
 }
 
 /*

@@ -137,14 +137,14 @@ uint8_t coma_count(uint8_t* string)
 	return count;
 }
 
-uint8_t* start_sentence_ptr(uint8_t *message)
+uint8_t* start_sentence_ptr(uint8_t *ptrStartBuff, uint8_t *message)
 {
 	uint8_t* tok;
 	for( tok = message;
 			((*tok) != START_PESOS || (*tok) == END_OF_STRING) &&
-					(tok - message) < DMA_BUFF_SIZE;
+					(tok - ptrStartBuff) < DMA_BUFF_SIZE;
 			tok++);
-	if((tok-message) == DMA_BUFF_SIZE )
+	if((tok-ptrStartBuff) == DMA_BUFF_SIZE )
 		return NULL;
 	else return ++tok;
 }
@@ -176,7 +176,7 @@ uint8_t* get_sentence_ptr(uint8_t *message, const char *type,  uint8_t *init_ptr
 	do
 	{
 	  type = aux_type;
-	  if( !(tok = start_sentence_ptr(tok) ) ) return NULL;
+	  if( !(tok = start_sentence_ptr(message,tok) ) ) return NULL;
 
 	  while((*tok) == (*type))
 	  {

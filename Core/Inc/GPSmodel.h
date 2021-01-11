@@ -10,9 +10,6 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
-//#include <stdio.h>
-//#include "parser.h"
 #include "tools.h"
 #define FIELD_BUFF 20
 

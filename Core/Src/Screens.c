@@ -9,7 +9,6 @@
 
 extern I2C_HandleTypeDef hi2c1;
 extern u8g2_t u8g2;
-extern GPSdata gps;
 extern RTC_HandleTypeDef hrtc;
 extern uint8_t screen_number;
 
@@ -203,7 +202,8 @@ void draw_screen_time()
 {
 	RTC_TimeTypeDef Time;
 	RTC_DateTypeDef Date;
-	uint8_t* f_to_char;
+	uint8_t time_string[9] = "  :  :  ";
+	uint8_t date_string[9] = "  /  /  ";
 	uint8_t y=11;
 	uint8_t x=0;
 
@@ -213,52 +213,25 @@ void draw_screen_time()
 
 	HAL_RTC_GetTime(&hrtc, &Time, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &Date, RTC_FORMAT_BIN);
-	//sprintf(f_to_char, "%i:%i:%i %i/%i/%i\r\n",Time.Hours,Time.Minutes, Time.Seconds, Date.Date, Date.Month, Date.Year);
-	//u8g2_DrawStr(&u8g2, x, y, f_to_char);
 
+	get_time_string(&Time, time_string);
 
-	f_to_char = u8x8_u8toa(Time.Hours,2);
-	u8g2_DrawStr(&u8g2, x, y, f_to_char);
-	x += u8g2_GetStrWidth(&u8g2,f_to_char);
-	u8g2_DrawStr(&u8g2, x, y, ":");
-	x += (uint8_t) u8g2_GetStrWidth(&u8g2,":");
+	u8g2_DrawStr(&u8g2, x, y, time_string);
 
-	f_to_char = u8x8_u8toa(Time.Minutes,2);
-	u8g2_DrawStr(&u8g2, x, y, f_to_char);
-	x += u8g2_GetStrWidth(&u8g2,f_to_char);
-	u8g2_DrawStr(&u8g2, x, y, ":");
-	x += (uint8_t) u8g2_GetStrWidth(&u8g2,":");
+	get_date_string(&Date, date_string);
+	x+=u8g2_GetStrWidth(&u8g2,time_string) + 5 ;
 
-	f_to_char = u8x8_u8toa(Time.Seconds,2);
-	u8g2_DrawStr(&u8g2, x, y, f_to_char);
-	x += u8g2_GetStrWidth(&u8g2,f_to_char);
-
-	u8g2_DrawStr(&u8g2, x, y, " ");
-	x += (uint8_t) u8g2_GetStrWidth(&u8g2," ");
-
-	f_to_char = u8x8_u8toa(Date.Date,2);
-	u8g2_DrawStr(&u8g2, x, y, f_to_char);
-	x += u8g2_GetStrWidth(&u8g2,f_to_char);
-	u8g2_DrawStr(&u8g2, x, y, "/");
-	x += (uint8_t) u8g2_GetStrWidth(&u8g2,"/");
-
-	f_to_char = u8x8_u8toa(Date.Month,2);
-	u8g2_DrawStr(&u8g2, x, y, f_to_char);
-	x += u8g2_GetStrWidth(&u8g2,f_to_char);
-	u8g2_DrawStr(&u8g2, x, y, "/");
-	x += (uint8_t) u8g2_GetStrWidth(&u8g2,"/");
-
-	f_to_char = u8x8_u8toa(Date.Year,2);
-	u8g2_DrawStr(&u8g2, x, y, f_to_char);
-	x += u8g2_GetStrWidth(&u8g2,f_to_char);
-
+	u8g2_DrawStr(&u8g2, x, y, date_string);
 }
 
 void draw_screen_ubic()
 {
-	uint8_t f_to_char[100];
+	extern GPSdata gps;
+	uint8_t f_to_char[10];
 	uint8_t y=11;
 	uint8_t x=0;
+
+	memset(f_to_char, '\0',10);
 
 	u8g2_ClearBuffer(&u8g2);
 	u8g2_SetFontMode(&u8g2, 1);	// Transparent
@@ -266,18 +239,19 @@ void draw_screen_ubic()
 	u8g2_SetFont(&u8g2, u8g2_font_t0_11_tf );
     u8g2_DrawStr(&u8g2, x, y, "Lat: ");
     x+=u8g2_GetStrWidth(&u8g2,"Lat: ");
-    //sprintf(f_to_char, "%f",gps.latitude );
-    //u8g2_DrawStr(&u8g2, x, y, f_to_char);
+    float_to_ascii(gps.latitude , f_to_char, 6) ;
+    u8g2_DrawStr(&u8g2, x, y, f_to_char);
 
+    memset(f_to_char, '\0',10);
     x=0;
     y=2*y;
     u8g2_DrawStr(&u8g2, x, y, "Lon: ");
 	x+=u8g2_GetStrWidth(&u8g2,"Lon: ");
-    //sprintf(f_to_char, "%f",gps.longitude );
-    //u8g2_DrawStr(&u8g2, x, y, f_to_char);
+	float_to_ascii(gps.longitude , f_to_char, 6) ;
+    u8g2_DrawStr(&u8g2, x, y, f_to_char);
 }
 
-
+/*
 void test_screen()
 {
 	RTC_TimeTypeDef Time;
@@ -313,5 +287,5 @@ void test_screen()
 	u8g2_draw_button_line(&u8g2, u8g2_GetDisplayHeight(&u8g2)-2, u8g2_GetDisplayWidth(&u8g2), 3, BUTTONS);
 
 	u8g2_SendBuffer(&u8g2);
-}
+}*/
 

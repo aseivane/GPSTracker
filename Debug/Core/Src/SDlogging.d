@@ -32,7 +32,7 @@ Core/Src/SDlogging.o: ../Core/Src/SDlogging.c ../FATFS/App/fatfs.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../Core/Inc/GPSmodel.h ../Core/Inc/tools.h
+ ../Core/Inc/GPSmodel.h ../Core/Inc/tools.h ../Core/Inc/main.h
 
 ../FATFS/App/fatfs.h:
 
@@ -111,3 +111,5 @@ Core/Src/SDlogging.o: ../Core/Src/SDlogging.c ../FATFS/App/fatfs.h \
 ../Core/Inc/GPSmodel.h:
 
 ../Core/Inc/tools.h:
+
+../Core/Inc/main.h:
