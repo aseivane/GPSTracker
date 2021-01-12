@@ -1,0 +1,37 @@
+UBX-ACK: B5 62 05 01 02 00 06 01 0F 38 
+Habilitar GxZDA: B5 62 06 01 03 00 F0 08 01 03 20
+Habilitar GxGGA: B5 62 06 01 03 00 F0 00 01 FB 10 
+Hailitar GxGBS: B5 62 06 01 03 00 F0 09 01 04 22
+Deshabilitar GxRMC: B5 62 06 01 03 00 F0 04 00 FE 17
+Deshabilitar GxGLL: B5 62 06 01 03 00 F0 01 00 FB 11
+
+
+Save configuration: B5 62 06 09 0D 00 00 00 00 00 FF FF 00 00 00 00 00 00 03 1D AB
+
+
+Power saving (sin Save Configuration)
+<- UBX CFG-RXM,  Size  10,  'Receiver Manager' B5 62 06 11 02 00 08 01 22 92
+                        
+<- UBX CFG,  Size   8,  'Config' B5 62 06 11 00 00 17 4B (POLL)
+                        
+-> UBX ACK-ACK, B5 62 05 01 02 00 06 11 1F 48
+                        
+-> UBX CFG-RXM, B5 62 06 11 02 00 08 01 22 92
+                        
+-> UBX ACK-ACK, B5 62 05 01 02 00 06 11 1F 48
+
+Power saving (Con Save Configuration)
+B5 62 06 11 02 00 08 01 22 92 (envia power saving mode)
+B5 62 06 09 0D 00 00 00 00 00 FF FF 00 00 00 00 00 00 07 21 AF (envia la config con la mascara de configuracion definitiva)
+B5 62 05 01 02 00 06 11 1F 48 (ACK de power saving)
+B5 62 05 01 02 00 06 09 17 40 (ACK de CFG)
+B5 62 06 11 00 00 17 4B (POLL de power saving para saber el estado guardado)
+B5 62 06 11 02 00 08 01 22 92 (responde el mismo mensaje que se envio con el modo de energia)
+B5 62 05 01 02 00 06 11 1F 48 (ACK)
+
+Navigation mode (pedestrian)
+B5 62 06 24 24 00 FF FF 03 03 00 00 00 00 10 27 00 00 05 00 FA 00 FA 00 64 00 2C 01 00 00 00 00 10 27 00 00 00 00 00 00 00 00 4A 75 
+
+PMS ON/OFF
+B5 62 06 3B 2C 00 01 06 00 00 0E 90 40 01 60 EA 00 00 10 27 00 00 00 00 00 00 05 00 00 00 2C 01 00 00 4F C1 03 00 87 02 00 00 FF 00 00 00 64 40 01 00 46 1F
+B5 62 06 3B 00 00 41 C9 

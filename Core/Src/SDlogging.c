@@ -48,19 +48,19 @@ FRESULT log_data()
 
 	/* Open or create a log file and ready to append */
   fr = f_mount(&fs, "", 0);
-	if ( fr != FR_OK )
-	{
+  if ( fr != FR_OK )
+  {
 		//send_uart ("ERROR!!! in mounting SD CARD...\r\n");
 		return fr;
-	}
-	else send_uart("SD CARD mounted successfully...\r\n");
+  }
+  else send_uart("SD CARD mounted successfully...\r\n");
 
-	fr = open_append(&fil, "logfile.txt");
-	if (fr != FR_OK)
-	{
+  fr = open_append(&fil, "logfile.txt");
+  if (fr != FR_OK)
+  {
 		 // send_uart ("ERROR!!! openning file...\r\n");
 		  return fr;
-	}
+  }
 
 	//send_uart ("logfile.txt opened\r\n");
 

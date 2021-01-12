@@ -37,7 +37,6 @@ int ascii_to_int(uint8_t *str)
     return result;
 }
 
-
 void ascii_to_float(uint8_t* ptrstr, float* num)
 {
     uint8_t coma;
@@ -190,4 +189,20 @@ void get_date_string(RTC_DateTypeDef *Date, uint8_t *date_string)
 	insert_chars(date_string+3, few_chars, 2);
 	int_to_ascii( (int) Date->Year, few_chars, 2);
 	insert_chars(date_string+6, few_chars, 2);
+}
+
+/**
+  * @brief UBX checksum
+  * @param buffer without sync chars 0xB5, 0x62,
+  * @retval None
+  */
+void UBX_checksum(__uint8_t Buffer[], uint8_t *CK_A, uint8_t *CK_B)
+{
+	uint16_t N = __8BITCAT(Buffer[3], Buffer[2]);
+	*CK_A = 0, *CK_B = 0;
+	for(int i=0;i<N;i++)
+	{
+		*CK_A = *CK_A + Buffer[i];
+		*CK_B = *CK_B + *CK_A;
+	}
 }

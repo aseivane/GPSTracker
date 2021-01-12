@@ -11,6 +11,45 @@
 #include <stdint.h>
 #include "main.h"
 
+
+#define __8BITCAT(x,y) ( (x << 8 ) + y )
+/*
+Set single bit at pos to '1' by generating a mask
+in the proper bit location and ORing (|) x with the mask.
+*/
+#define SET_BIT(x, pos) (x |= (1U << pos))
+/*
+Set single bit at pos to '0' by generating a mask
+in the proper bit location and Anding x with the mask.
+*/
+#define CLEAR_BIT(x, pos) (x &= (~(1U<< pos)))
+/*
+Set single bit at pos to '1' by generating a mask
+in the proper bit location and ex-ORing x with the mask.
+*/
+#define TOGGLE_BIT(x, pos) x ^= (1U<< pos)
+/*
+Set single bit at pos to '1' by generating a mask
+in the proper bit location and Anding x with the mask.
+It evaluates 1 if a bit is set otherwise 0.
+*/
+#define CHECK_BIT(x, pos) (x & (1UL << pos) )
+//Macro to swap nibbles
+#define SWAP_NIBBLES(x) ((x & 0x0F)<<4 | (x & 0xF0)>>4)
+//Macro to swap byte of 32-bit +ve integer variable
+#define SWAP_BYTES(u32Value) ((u32Value & 0x000000FF) << 24)\
+|((u32Value & 0x0000FF00) << 8) \
+|((u32Value & 0x00FF0000) >> 8) \
+|((u32Value & 0xFF000000) >> 24)
+//macro to swap odd-even bits
+#define SWAP_ODD_EVEN_BIT(x) ((x & 0xAAAAAAAA)>>1 | (x & 0x55555555)<<1);
+//macro to swap two numbers
+#define SWAP(x, y) (x ^= y ^= x)
+//macro to get low and high bytes
+#define LOWBYTE(v)   ((uint8_t) (x))
+#define HIGHBYTE(v)  ((uint8_t) (((uint8_t) (x)) >> 8))
+
+
 int pow_10(uint8_t n);
 int ascii_to_int(uint8_t *str);
 void ascii_to_float(uint8_t* str, float* num);

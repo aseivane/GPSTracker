@@ -1,6 +1,7 @@
-main.c:100:6:HAL_UART_RxIdleCallback	8	static
-main.c:117:6:HAL_GPIO_EXTI_Callback	8	static
-main.c:132:6:check_buttons	16	static
-main.c:231:6:SystemClock_Config	88	static,ignoring_inline_asm
-main.c:160:5:main	48	static,ignoring_inline_asm
-main.c:514:6:Error_Handler	0	static,ignoring_inline_asm
+main.c:110:6:HAL_TIM_PeriodElapsedCallback	8	static
+main.c:114:6:HAL_UART_RxIdleCallback	8	static
+main.c:129:6:HAL_GPIO_EXTI_Callback	8	static
+main.c:144:6:check_buttons	32	static
+main.c:241:6:SystemClock_Config	88	static,ignoring_inline_asm
+main.c:174:5:main	56	static,ignoring_inline_asm
+main.c:547:6:Error_Handler	0	static,ignoring_inline_asm

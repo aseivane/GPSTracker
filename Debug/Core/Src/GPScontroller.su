@@ -1,2 +1,2 @@
-GPScontroller.c:26:6:update_GPS_from_NMEA	1176	static
-GPScontroller.c:98:6:configure_GPS	24	static
+GPScontroller.c:26:6:update_GPS_from_NMEA	1168	static
+GPScontroller.c:87:6:configure_GPS	80	static

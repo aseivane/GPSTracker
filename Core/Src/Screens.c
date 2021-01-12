@@ -44,10 +44,7 @@ uint8_t u8x8_byte_stm32hal_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, vo
     case U8X8_MSG_BYTE_END_TRANSFER:
 	{
 		uint8_t iaddress = I2C_ADDRESS;
-		//HAL_I2C_Master_Transmit_DMA(&hi2c1, (uint16_t)iaddress<<1, &buffer[0], buf_idx);
 		HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)iaddress<<1, &buffer[0], buf_idx, 20u);
-		//TODO Investigate why delay is needed here.
-		//Seems like DMA feeding bytes too fast.
 		volatile uint32_t i;
 		for (i = 1; i <= 500; i++);
 	}
