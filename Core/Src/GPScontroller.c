@@ -15,10 +15,13 @@
 #include <stdio.h>
 
 extern GPSdata gps;
-
 extern RTC_HandleTypeDef hrtc;
-
 extern UART_HandleTypeDef huart1;
+
+#ifdef DEBUG
+extern UART_HandleTypeDef huart3;
+#endif
+
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern uint8_t time_updated;
 extern uint8_t date_updated;
@@ -52,11 +55,15 @@ void update_GPS_from_NMEA()
 		ptrSentence = get_sentence_ptr(copy_buffer, "GPZDA", NULL);
 		if( ptrSentence != NULL )
 		{
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"Sentence found\r\n", strlen("Sentence found\r\n"),1000);
+#endif
 			if( is_sentence_complete(copy_buffer, ptrSentence) )
 			{
 				get_fields(ptrSentence , fields);
-				if(strcmp(fields[0],""))
+				if( *(fields[0]) != '0' )
 				{
+					uint8_t* algo = fields[0];
 				  memcpy(f_to_char,fields[0],6);
 				  f_to_char[6] = '\0';
 				  Time.Seconds = (uint8_t) ascii_to_int(f_to_char+4);
@@ -69,7 +76,7 @@ void update_GPS_from_NMEA()
 				  time_updated=1;
 				}
 
-				if(strcmp(fields[1],""))
+				if(  *(fields[1]) != '0')
 				{
 
 				  Date.Date = (uint8_t) ascii_to_int(fields[1]);
@@ -86,17 +93,23 @@ void update_GPS_from_NMEA()
 
 void configure_GPS()
 {
-	const uint8_t enable_ZDA [11] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x08, 0x01, 0x03, 0x20};
-	const uint8_t enable_GGA [11] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x01, 0xFB, 0x10};
-	const uint8_t enable_GBS [11] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x09, 0x01, 0x04, 0x22};
-	const uint8_t disable_RMC[11] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17};
-	const uint8_t disable_GLL[11] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x01, 0x00, 0xFB, 0x11};
-	const uint8_t power_save [10] = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92};
+	const uint8_t enable_ZDA [ZDA_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x08, 0x01, 0x03, 0x20};
+	const uint8_t enable_GGA [GGA_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x01, 0xFB, 0x10};
+	const uint8_t enable_GBS [GBS_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x09, 0x01, 0x04, 0x22};
+	const uint8_t disable_RMC[RMC_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17};
+	const uint8_t disable_GLL[GLL_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x01, 0x00, 0xFB, 0x11};
+	//const uint8_t power_save [RXM_PAYLOAD] = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92};
 
-	HAL_UART_Transmit(&huart1, enable_ZDA, 11,1000);
-	HAL_UART_Transmit(&huart1, enable_GGA, 11,1000);
-	HAL_UART_Transmit(&huart1, enable_GBS, 11,1000);
-	HAL_UART_Transmit(&huart1, disable_RMC, 11,1000);
-	HAL_UART_Transmit(&huart1, disable_GLL, 11,1000);
-	HAL_UART_Transmit(&huart1, power_save, 10,1000);
+	HAL_UART_Transmit(&huart1, enable_ZDA, ZDA_PAYLOAD,1000);
+	HAL_UART_Transmit(&huart1, enable_GGA, GGA_PAYLOAD,1000);
+	HAL_UART_Transmit(&huart1, enable_GBS, GBS_PAYLOAD,1000);
+	HAL_UART_Transmit(&huart1, disable_RMC, RMC_PAYLOAD,1000);
+	HAL_UART_Transmit(&huart1, disable_GLL, GLL_PAYLOAD,1000);
+	//HAL_UART_Transmit(&huart1, power_save, RXM_PAYLOAD,1000);
+}
+
+void GPS_1min_sleep()
+{
+	uint8_t UBLOX_GPSStandby[] = {0xB5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x60, 0xEA, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x97, 0xA1};
+	HAL_UART_Transmit(&huart1, UBLOX_GPSStandby, 16,1000);
 }

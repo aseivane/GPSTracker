@@ -1,3 +1,3 @@
-SDlogging.c:10:9:open_append	16	static
-SDlogging.c:28:6:send_uart	8	static
-SDlogging.c:35:9:log_data	8368	static
+SDlogging.c:11:9:open_append	24	static
+SDlogging.c:29:6:send_uart	24	static
+SDlogging.c:36:9:log_data	8368	static

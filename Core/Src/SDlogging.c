@@ -6,6 +6,7 @@
  */
 #include "fatfs.h"
 #include "GPSmodel.h"
+#include <string.h>
 
 FRESULT open_append (
     FIL* fp,            /* [OUT] File object to create */
@@ -53,7 +54,7 @@ FRESULT log_data()
 		//send_uart ("ERROR!!! in mounting SD CARD...\r\n");
 		return fr;
   }
-  else send_uart("SD CARD mounted successfully...\r\n");
+  //else send_uart("SD CARD mounted successfully...\r\n");
 
   fr = open_append(&fil, "logfile.txt");
   if (fr != FR_OK)
@@ -79,4 +80,5 @@ FRESULT log_data()
 	f_printf(&fil, aux1);
 	/* Close the file */
 	f_close(&fil);
+	return FR_OK;
 }

@@ -48,6 +48,7 @@
 
 #define SIG_BUTTON 1U
 #define SEL_BUTTON 2U
+//#undef DEBUG
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -62,9 +63,10 @@ RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi1;
 
-TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
@@ -100,7 +102,8 @@ static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_TIM1_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -109,18 +112,28 @@ static void MX_TIM1_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER TIM\r\n", strlen("ENTER TIM\r\n"),1000);
+#endif
 	Screen_update();
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT TIM\r\n", strlen("EXIT TIM\r\n"),1000);
+#endif
 }
 void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
 {
-
 	/*uint32_t mili; //contador en milisegundos
 	mili = HAL_GetTick();
 	char tiempo[sizeof(uint32_t)*8+1];*/
-
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER IT_RXIDLE\r\n", strlen("ENTER IT_RXIDLE\r\n"),1000);
+	HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, strlen(usart_rx_dma_buffer),1000);
+#endif
 	update_GPS_from_NMEA();
 	GPSupdated = 1;
-
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT IT_RXIDLE\r\n", strlen("EXIT IT_RXIDLE\r\n"),1000);
+#endif
 	/*
 	sprintf(tiempo, "%lu",HAL_GetTick()-mili);
 	HAL_UART_Transmit(huart, (uint8_t *)tiempo, strlen(tiempo),1000);*/
@@ -128,6 +141,9 @@ void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER EXTI\r\n", strlen("ENTER EXTI\r\n"),1000);
+#endif
 	longPress = HAL_GetTick();
 	switch(GPIO_Pin)
 	{
@@ -139,6 +155,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			button_pressed = SEL_BUTTON;
 			break;
 	}
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT EXTI\r\n", strlen("EXIT EXTI\r\n"),1000);
+#endif
 }
 
 void check_buttons()
@@ -158,8 +177,6 @@ void check_buttons()
 
 		case SEL_BUTTON:
 			button_pressed = SEL_BUTTON;
-			uint8_t UBLOX_GPSStandby[] = {0xB5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x60, 0xEA, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x97, 0xA1};
-			HAL_UART_Transmit(&huart1, UBLOX_GPSStandby, 16,1000);
 			break;
 	}
 	button_pressed = 0;
@@ -200,8 +217,10 @@ int main(void)
   MX_RTC_Init();
   MX_FATFS_Init();
   MX_SPI1_Init();
-  MX_TIM1_Init();
+  MX_USART3_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+
   Screen_init(&u8g2);
 
   HAL_Delay(1000);
@@ -209,13 +228,17 @@ int main(void)
   GPS_init(&gps);
   configure_GPS();
 
-  HAL_TIM_Base_Start_IT(&htim1);
   HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);
+  HAL_TIM_Base_Start_IT(&htim3);
   __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE); 			// enable idle line interrupt
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  //HAL_SuspendTick();
+  //HAL_PWR_EnableSleepOnExit ();
+  //HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
   while (1)
   {
 	if(GPSupdated)
@@ -365,11 +388,14 @@ static void MX_RTC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RTC_Init 2 */
-  /*RTC_AlarmTypeDef Alarm;
-  Alarm.Alarm = RTC_ALARM_A;
-
-  HAL_RTC_SetAlarm_IT (&hrtc, RTC_AlarmTypeDef * sAlarm, RTC_FORMAT_BIN);
-  __HAL_RTC_ALARM_ENABLE_IT*/
+  /*
+	RTC_AlarmTypeDef Alarm;
+	Alarm.Alarm = RTC_ALARM_A;
+	HAL_RTC_GetTime(&hrtc, &(Alarm.AlarmTime), RTC_FORMAT_BIN);
+	Alarm.AlarmTime.Minutes += 1;
+	HAL_RTC_SetAlarm_IT (&hrtc, &Alarm, RTC_FORMAT_BIN);
+  __HAL_RTC_ALARM_EXTI_ENABLE_IT();
+  __HAL_RTC_ALARM_ENABLE_IT(&hrtc,RTC_IT_ALRA);*/
   /* USER CODE END RTC_Init 2 */
 
 }
@@ -413,47 +439,47 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief TIM1 Initialization Function
+  * @brief TIM3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM1_Init(void)
+static void MX_TIM3_Init(void)
 {
 
-  /* USER CODE BEGIN TIM1_Init 0 */
+  /* USER CODE BEGIN TIM3_Init 0 */
 
-  /* USER CODE END TIM1_Init 0 */
+  /* USER CODE END TIM3_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM1_Init 1 */
+  /* USER CODE BEGIN TIM3_Init 1 */
 
-  /* USER CODE END TIM1_Init 1 */
-  htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 10000;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 7200;
-  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 10000;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 7200;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
   }
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
   {
     Error_Handler();
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM1_Init 2 */
-  /* USER CODE END TIM1_Init 2 */
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
 
 }
 
@@ -487,6 +513,39 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -528,10 +587,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
 }

@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "main.h"
 #include "GPSmodel.h"
 #include "u8g2.h"

@@ -75,13 +75,12 @@ void GPS_update(GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker ta
     }
 }
 
-void GPS_update_GNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
+void fields_to_GPS(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 {
 	enum GNGGAfields {
 		TIME, LATITUDE, NoS, LONGITUDE, EoW,
 		FIX, SIV, HDOP, ALTTUDE_GEOID, ALTTUDE_METER,
 		GEO_SEP, GEO_SEP_METER, DIFF, DIFF_REF}; //SIV = SATELLITES IN VIEW
-
 	//self->latitude = NMEA_deg2dec( fields[LATITUDE], 2 );
 	ascii_to_float(fields[LATITUDE], &(self->latitude) );
 	NMEA_deg2dec(&(self->latitude));
@@ -101,6 +100,33 @@ void GPS_update_GNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 	self->HDOP = (uint8_t) ascii_to_int(fields[HDOP]);
 
 	self->altitude = (uint8_t) ascii_to_int(fields[ALTTUDE_METER]);
+}
+
+
+
+void GPS_update_GNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
+{
+	static uint8_t count = 0;
+	GPSdata aux_data;
+
+	fields_to_GPS(&aux_data, fields);
+
+	if(!count)
+	{
+		self->latitude = aux_data.latitude;
+		self->longitude = aux_data.longitude;
+	}
+	else
+	{
+		self->latitude = (self->latitude + aux_data.latitude)/2;
+		self->longitude = (self->longitude + aux_data.longitude)/2;
+		self->altitude = (self->altitude + aux_data.altitude)/2;
+	}
+	self->GPS_fix = aux_data.GPS_fix;
+	self->satellites_in_view = aux_data.satellites_in_view;
+	self->HDOP = aux_data.HDOP;
+
+	count == 10 ? count = 0 : count++;
 }
 
 void NMEA_deg2dec(float* number)

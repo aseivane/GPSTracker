@@ -17,37 +17,37 @@
 Set single bit at pos to '1' by generating a mask
 in the proper bit location and ORing (|) x with the mask.
 */
-#define SET_BIT(x, pos) (x |= (1U << pos))
+#define MY_SET_BIT(x, pos) (x |= (1U << pos))
 /*
 Set single bit at pos to '0' by generating a mask
 in the proper bit location and Anding x with the mask.
 */
-#define CLEAR_BIT(x, pos) (x &= (~(1U<< pos)))
+#define MY_CLEAR_BIT(x, pos) (x &= (~(1U<< pos)))
 /*
 Set single bit at pos to '1' by generating a mask
 in the proper bit location and ex-ORing x with the mask.
 */
-#define TOGGLE_BIT(x, pos) x ^= (1U<< pos)
+#define MY_TOGGLE_BIT(x, pos) x ^= (1U<< pos)
 /*
 Set single bit at pos to '1' by generating a mask
 in the proper bit location and Anding x with the mask.
 It evaluates 1 if a bit is set otherwise 0.
 */
-#define CHECK_BIT(x, pos) (x & (1UL << pos) )
+#define MY_CHECK_BIT(x, pos) (x & (1UL << pos) )
 //Macro to swap nibbles
-#define SWAP_NIBBLES(x) ((x & 0x0F)<<4 | (x & 0xF0)>>4)
+#define MY_SWAP_NIBBLES(x) ((x & 0x0F)<<4 | (x & 0xF0)>>4)
 //Macro to swap byte of 32-bit +ve integer variable
-#define SWAP_BYTES(u32Value) ((u32Value & 0x000000FF) << 24)\
+#define MY_SWAP_BYTES(u32Value) ((u32Value & 0x000000FF) << 24)\
 |((u32Value & 0x0000FF00) << 8) \
 |((u32Value & 0x00FF0000) >> 8) \
 |((u32Value & 0xFF000000) >> 24)
 //macro to swap odd-even bits
-#define SWAP_ODD_EVEN_BIT(x) ((x & 0xAAAAAAAA)>>1 | (x & 0x55555555)<<1);
+#define MY_SWAP_ODD_EVEN_BIT(x) ((x & 0xAAAAAAAA)>>1 | (x & 0x55555555)<<1);
 //macro to swap two numbers
-#define SWAP(x, y) (x ^= y ^= x)
+#define MY_SWAP(x, y) (x ^= y ^= x)
 //macro to get low and high bytes
-#define LOWBYTE(v)   ((uint8_t) (x))
-#define HIGHBYTE(v)  ((uint8_t) (((uint8_t) (x)) >> 8))
+#define MY_LOWBYTE(v)   ((uint8_t) (x))
+#define MY_HIGHBYTE(v)  ((uint8_t) (((uint8_t) (x)) >> 8))
 
 
 int pow_10(uint8_t n);
@@ -58,5 +58,6 @@ __uint8_t int_to_ascii(int x, char dest[], __uint8_t d);
 void float_to_ascii(float n, uint8_t* res, uint8_t afterpoint);
 void insert_chars(uint8_t *dest, uint8_t *src, uint8_t d);
 void get_time_string(RTC_TimeTypeDef *Time, uint8_t *time_string);
+void get_date_string(RTC_DateTypeDef *Date, uint8_t *date_string);
 
 #endif /* TOOLS_H_ */
