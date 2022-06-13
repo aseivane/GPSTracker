@@ -1,7 +1,7 @@
-Screens.c:15:9:u8x8_byte_stm32hal_hw_i2c	48	static
-Screens.c:58:9:psoc_gpio_and_delay_cb	32	static
-Screens.c:115:9:draw_button_line	40	static
-Screens.c:163:6:Screen_init	16	static
-Screens.c:177:6:Screen_update	16	static
-Screens.c:198:6:draw_screen_time	48	static
-Screens.c:224:6:draw_screen_ubic	24	static
+../Core/Src/Screens.c:15:9:u8x8_byte_stm32hal_hw_i2c	48	static
+../Core/Src/Screens.c:58:9:psoc_gpio_and_delay_cb	32	static
+../Core/Src/Screens.c:115:9:draw_button_line	40	static
+../Core/Src/Screens.c:163:6:Screen_init	16	static
+../Core/Src/Screens.c:177:6:Screen_update	16	static
+../Core/Src/Screens.c:198:6:draw_screen_time	48	static
+../Core/Src/Screens.c:224:6:draw_screen_ubic	24	static
