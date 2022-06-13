@@ -1,0 +1,3 @@
+GPScontroller.c:29:6:update_GPS_from_NMEA	1184	static
+GPScontroller.c:94:6:configure_GPS	72	static
+GPScontroller.c:111:6:GPS_1min_sleep	32	static
