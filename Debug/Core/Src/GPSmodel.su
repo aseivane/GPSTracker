@@ -1,5 +1,0 @@
-../Core/Src/GPSmodel.c:29:6:GPS_init	16	static
-../Core/Src/GPSmodel.c:41:6:GPS_update	24	static
-../Core/Src/GPSmodel.c:78:6:fields_to_GPS	16	static
-../Core/Src/GPSmodel.c:107:6:GPS_update_GNGGA	32	static
-../Core/Src/GPSmodel.c:132:6:NMEA_deg2dec	32	static

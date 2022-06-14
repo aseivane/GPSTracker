@@ -21,6 +21,7 @@ C_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+Core/Src/GPS \
 Core/Src \
 Core/Src/u8g2 \
 Core/Startup \

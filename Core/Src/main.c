@@ -25,10 +25,13 @@
 /* USER CODE BEGIN Includes */
 #include "GPSmodel.h"
 #include "GPScontroller.h"
-#include "fatfs_sd.h"
+
 #include "u8g2/u8g2.h"
 #include "Screens.h"
+
+#include "fatfs_sd.h"
 #include "SDlogging.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -66,7 +69,9 @@ SPI_HandleTypeDef hspi1;
 TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
+
 UART_HandleTypeDef huart3;
+
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
@@ -120,6 +125,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT TIM\r\n", strlen("EXIT TIM\r\n"),1000);
 #endif
 }
+
 void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
 {
 	/*uint32_t mili; //contador en milisegundos
@@ -182,6 +188,20 @@ void check_buttons()
 	button_pressed = 0;
 }
 
+void Setup()
+{
+	  Screen_init(&u8g2);
+
+	  HAL_Delay(1000);
+
+	  GPS_init(&gps);
+	  configure_GPS();
+
+	  HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);
+	  HAL_TIM_Base_Start_IT(&htim3);
+	  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE); 			// enable idle line interrupt
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -221,16 +241,8 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  Screen_init(&u8g2);
+  Setup();
 
-  HAL_Delay(1000);
-
-  GPS_init(&gps);
-  configure_GPS();
-
-  HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);
-  HAL_TIM_Base_Start_IT(&htim3);
-  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE); 			// enable idle line interrupt
   /* USER CODE END 2 */
 
   /* Infinite loop */

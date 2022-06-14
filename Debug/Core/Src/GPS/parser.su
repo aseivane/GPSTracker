@@ -1,0 +1,6 @@
+../Core/Src/GPS/parser.c:76:6:get_value	40	static
+../Core/Src/GPS/parser.c:101:7:get_fields	104	static
+../Core/Src/GPS/parser.c:130:9:coma_count	24	static
+../Core/Src/GPS/parser.c:140:10:start_sentence_ptr	24	static
+../Core/Src/GPS/parser.c:152:9:is_sentence_complete	24	static
+../Core/Src/GPS/parser.c:166:10:get_sentence_ptr	32	static
