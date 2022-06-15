@@ -195,42 +195,52 @@ uint8_t* findStartChar(uint8_t *ptrStartBuff)
 	return ptrAux;
 }
 
-
+/** @brief Returns a pointer to the first aparition of type string.
+ *
+ *  Starts at message address and runs through the string until the end or until
+ *  it fins a match. Whatever comes first.
+ *
+ *  @param message pointer that refers to where is expected tu start looking for.
+ *  @param type string to find. NMEA Talker
+ *  @return token to start of message. NULL if there is no match.
+ */
 uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
 {
 	uint8_t* tok;
-	uint8_t* aux;
-	const char * aux_type;
+	const char * type_offset;
+	uint8_t* tok_offset;
 
-	if(init_ptr == NULL) tok = message;
+	/* assign aux pointers */
+	if ( NULL == init_ptr ) tok = message;
 	else tok = init_ptr;
-	aux_type= type;
 
 	do
 	{
-	  type = aux_type;
-	  if( !(tok = start_sentence_ptr(message,tok) ) ) return NULL;
+		if( !(tok = findStartChar(tok) ) ) return NULL; //looks for next $ ocurrence
 
-	  while((*tok) == (*type))
-	  {
-		  tok++;
-		  type++;
-	  }
-	}while ((*type) != END_OF_STRING &&
-			(tok-message) < DMA_BUFF_SIZE);
+		tok++;	// findStartChar return a pointer to $. moves one more 
+		
+		type_offset= type;
+		tok_offset = tok;
+
+		/* compares the chars in type string
+		 * until the end or a failed match
+		 */
+		while( ( *tok_offset ) == ( *type_offset )
+				&& END_OF_STRING != ( *type_offset ) )
+		{
+			tok_offset++;	// moves the pointer
+			type_offset++;
+		}
+	/* loop until reach the end of the buffer or 
+	 * type_offset point to '\0', ehich means the type matched
+	 * in the message
+	 */ 
+	}while ( END_OF_STRING != (*type_offset) &&
+			DMA_BUFF_SIZE > (tok-message) );
 
 	//checkea que haya cortado por coincidencia y no por fin del buffer
-	if((*type) != END_OF_STRING) return NULL;
+	if((*type_offset) != END_OF_STRING) return NULL;
 
 	return tok;
-
-    /*
-
-    if ( !CRC_check(tok))
-    {
-        //printf("get_sentence CRC incorrecto\r\n");
-        return NULL;
-    }*/
-
-
 }
