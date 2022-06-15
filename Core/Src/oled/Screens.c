@@ -4,7 +4,7 @@
  *  Created on: Dec 30, 2020
  *      Author: z0042kvk
  */
-#include "Screens.h"
+#include <OLED/Screens.h>
 
 
 extern I2C_HandleTypeDef hi2c1;
@@ -160,21 +160,29 @@ uint8_t draw_button_line(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_t cur
   return cnt;
 }
 
-void Screen_init(u8g2_t* u8g2)
+/**
+  * @brief  Init and setup Sreen
+  * @retval -
+  */
+void initScreen(u8g2_t* u8g2)
 {
 	  u8g2_Setup_ssd1306_i2c_128x64_noname_f(u8g2,
 			  U8G2_R0,
 			  u8x8_byte_stm32hal_hw_i2c,
-			  psoc_gpio_and_delay_cb);//configura pantalla y las funciones
-	  u8g2_SetI2CAddress(u8g2, I2C_ADDRESS*2);// establece la direccion i2c
+			  psoc_gpio_and_delay_cb);	// Configure u8g2 type
+	  u8g2_SetI2CAddress(u8g2, I2C_ADDRESS*2);	// Configure i2c address
 	  u8g2_InitDisplay(u8g2);
-	  u8g2_SetPowerSave(u8g2, 0); //deshabilita el ahorro de energia
-	  u8g2_ClearDisplay(u8g2);
+	  u8g2_ClearDisplay(u8g2);	// Clean screen for fist use
+	  u8g2_SetPowerSave(u8g2, 0U);	// Disables Energy save
 
-	  screen_number = 0;
+	  screen_number = 0;	// set home screen
 }
 
-void Screen_update()
+/**
+  * @brief  Updates the screen according the actual screen
+  * @retval -
+  */
+void updateScreen()
 {
 	switch(screen_number)
 	{

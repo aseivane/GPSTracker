@@ -5,7 +5,7 @@
  *      Author: z0042kvk
  */
 #include "fatfs.h"
-#include "GPSmodel.h"
+#include "GPS/GPSmodel.h"
 #include <string.h>
 
 FRESULT open_append (

@@ -42,8 +42,8 @@
 
 */
 
-#include "u8g2.h"
 #include <assert.h>
+#include "u8g2.h"
 
 /*==========================================================*/
 /* intersection procedure */

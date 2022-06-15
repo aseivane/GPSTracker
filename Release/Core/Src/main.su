@@ -1,0 +1,8 @@
+../Core/Src/main.c:120:6:HAL_TIM_PeriodElapsedCallback	0	static
+../Core/Src/main.c:133:6:HAL_UART_RxIdleCallback	8	static
+../Core/Src/main.c:156:6:HAL_GPIO_EXTI_Callback	8	static
+../Core/Src/main.c:177:6:check_buttons	16	static
+../Core/Src/main.c:203:6:Setup	8	static
+../Core/Src/main.c:291:6:SystemClock_Config	96	static,ignoring_inline_asm
+../Core/Src/main.c:219:5:main	56	static,ignoring_inline_asm
+../Core/Src/main.c:633:6:Error_Handler	0	static,ignoring_inline_asm

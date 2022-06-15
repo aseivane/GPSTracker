@@ -7,17 +7,23 @@
 C_SRCS += \
 ../Core/Src/GPS/GPScontroller.c \
 ../Core/Src/GPS/GPSmodel.c \
-../Core/Src/GPS/parser.c 
+../Core/Src/GPS/GPSview.c \
+../Core/Src/GPS/parser.c \
+../Core/Src/GPS/tools.c 
 
 OBJS += \
 ./Core/Src/GPS/GPScontroller.o \
 ./Core/Src/GPS/GPSmodel.o \
-./Core/Src/GPS/parser.o 
+./Core/Src/GPS/GPSview.o \
+./Core/Src/GPS/parser.o \
+./Core/Src/GPS/tools.o 
 
 C_DEPS += \
 ./Core/Src/GPS/GPScontroller.d \
 ./Core/Src/GPS/GPSmodel.d \
-./Core/Src/GPS/parser.d 
+./Core/Src/GPS/GPSview.d \
+./Core/Src/GPS/parser.d \
+./Core/Src/GPS/tools.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -27,7 +33,7 @@ Core/Src/GPS/%.o Core/Src/GPS/%.su: ../Core/Src/GPS/%.c Core/Src/GPS/subdir.mk
 clean: clean-Core-2f-Src-2f-GPS
 
 clean-Core-2f-Src-2f-GPS:
-	-$(RM) ./Core/Src/GPS/GPScontroller.d ./Core/Src/GPS/GPScontroller.o ./Core/Src/GPS/GPScontroller.su ./Core/Src/GPS/GPSmodel.d ./Core/Src/GPS/GPSmodel.o ./Core/Src/GPS/GPSmodel.su ./Core/Src/GPS/parser.d ./Core/Src/GPS/parser.o ./Core/Src/GPS/parser.su
+	-$(RM) ./Core/Src/GPS/GPScontroller.d ./Core/Src/GPS/GPScontroller.o ./Core/Src/GPS/GPScontroller.su ./Core/Src/GPS/GPSmodel.d ./Core/Src/GPS/GPSmodel.o ./Core/Src/GPS/GPSmodel.su ./Core/Src/GPS/GPSview.d ./Core/Src/GPS/GPSview.o ./Core/Src/GPS/GPSview.su ./Core/Src/GPS/parser.d ./Core/Src/GPS/parser.o ./Core/Src/GPS/parser.su ./Core/Src/GPS/tools.d ./Core/Src/GPS/tools.o ./Core/Src/GPS/tools.su
 
 .PHONY: clean-Core-2f-Src-2f-GPS
 

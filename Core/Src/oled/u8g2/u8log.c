@@ -36,6 +36,7 @@
 
 #include <stdint.h>
 #include <string.h>
+
 #include "u8x8.h"
 
 

@@ -33,9 +33,9 @@
 
 */
 
-#include "u8g2.h"
 #include <string.h>
 #include <assert.h>
+#include "u8g2.h"
 
 
 /*============================================*/

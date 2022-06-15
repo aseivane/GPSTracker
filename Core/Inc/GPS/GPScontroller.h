@@ -19,8 +19,12 @@
 #define GLL_PAYLOAD 11
 #define RXM_PAYLOAD 10
 
-void update_GPS_from_NMEA();
-void configure_GPS();
+void initGPS(GPSdata * _gps);
+void updateGPS();
+void updateTime(uint8_t* copy_buffer);
+uint8_t setTime(uint8_t* copy_buffer);
+uint8_t setDate(uint8_t** fields);
+void configGPS();
 void GPS_1min_sleep();
 
 #endif /* INC_GPSCONTROLLER_H_ */

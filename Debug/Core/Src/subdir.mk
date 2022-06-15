@@ -6,39 +6,33 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/SDlogging.c \
-../Core/Src/Screens.c \
 ../Core/Src/fatfs_sd.c \
 ../Core/Src/main.c \
 ../Core/Src/stm32f1xx_hal_msp.c \
 ../Core/Src/stm32f1xx_it.c \
 ../Core/Src/syscalls.c \
 ../Core/Src/sysmem.c \
-../Core/Src/system_stm32f1xx.c \
-../Core/Src/tools.c 
+../Core/Src/system_stm32f1xx.c 
 
 OBJS += \
 ./Core/Src/SDlogging.o \
-./Core/Src/Screens.o \
 ./Core/Src/fatfs_sd.o \
 ./Core/Src/main.o \
 ./Core/Src/stm32f1xx_hal_msp.o \
 ./Core/Src/stm32f1xx_it.o \
 ./Core/Src/syscalls.o \
 ./Core/Src/sysmem.o \
-./Core/Src/system_stm32f1xx.o \
-./Core/Src/tools.o 
+./Core/Src/system_stm32f1xx.o 
 
 C_DEPS += \
 ./Core/Src/SDlogging.d \
-./Core/Src/Screens.d \
 ./Core/Src/fatfs_sd.d \
 ./Core/Src/main.d \
 ./Core/Src/stm32f1xx_hal_msp.d \
 ./Core/Src/stm32f1xx_it.d \
 ./Core/Src/syscalls.d \
 ./Core/Src/sysmem.d \
-./Core/Src/system_stm32f1xx.d \
-./Core/Src/tools.d 
+./Core/Src/system_stm32f1xx.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -48,7 +42,7 @@ Core/Src/%.o Core/Src/%.su: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/SDlogging.d ./Core/Src/SDlogging.o ./Core/Src/SDlogging.su ./Core/Src/Screens.d ./Core/Src/Screens.o ./Core/Src/Screens.su ./Core/Src/fatfs_sd.d ./Core/Src/fatfs_sd.o ./Core/Src/fatfs_sd.su ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/stm32f1xx_hal_msp.d ./Core/Src/stm32f1xx_hal_msp.o ./Core/Src/stm32f1xx_hal_msp.su ./Core/Src/stm32f1xx_it.d ./Core/Src/stm32f1xx_it.o ./Core/Src/stm32f1xx_it.su ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f1xx.d ./Core/Src/system_stm32f1xx.o ./Core/Src/system_stm32f1xx.su ./Core/Src/tools.d ./Core/Src/tools.o ./Core/Src/tools.su
+	-$(RM) ./Core/Src/SDlogging.d ./Core/Src/SDlogging.o ./Core/Src/SDlogging.su ./Core/Src/fatfs_sd.d ./Core/Src/fatfs_sd.o ./Core/Src/fatfs_sd.su ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/stm32f1xx_hal_msp.d ./Core/Src/stm32f1xx_hal_msp.o ./Core/Src/stm32f1xx_hal_msp.su ./Core/Src/stm32f1xx_it.d ./Core/Src/stm32f1xx_it.o ./Core/Src/stm32f1xx_it.su ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f1xx.d ./Core/Src/system_stm32f1xx.o ./Core/Src/system_stm32f1xx.su
 
 .PHONY: clean-Core-2f-Src
 

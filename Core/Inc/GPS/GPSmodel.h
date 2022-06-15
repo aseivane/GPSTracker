@@ -61,7 +61,7 @@ satellite * CreateSatellite(   uint8_t number, uint8_t elevation,
 		unsigned int azimut, uint8_t SNR );
 void Satellite_init(satellite * new_sat, uint8_t number, uint8_t elevation,
 		unsigned int azimut, uint8_t SNR );*/
-void GPS_init(GPSdata * self);
+void initGPSmodel(GPSdata * self);
 void fields_to_GPS(GPSdata * self, uint8_t fields[][FIELD_BUFF]);
 void GPS_update(GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker talker);
 void GPS_update_GNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF]);

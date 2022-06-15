@@ -58,7 +58,7 @@
 #ifndef U8G2_H
 #define U8G2_H
 
-#include "u8x8.h"
+#include <OLED/u8x8.h>
 
 /*
   The following macro switches the library into dynamic display buffer allocation mode.

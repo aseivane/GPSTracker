@@ -18,16 +18,15 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include "OLED/Screens.h"
+#include "OLED/u8g2.h"
 #include "main.h"
 #include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "GPSmodel.h"
-#include "GPScontroller.h"
-
-#include "u8g2/u8g2.h"
-#include "Screens.h"
+#include "GPS/GPSmodel.h"
+#include "GPS/GPScontroller.h"
 
 #include "fatfs_sd.h"
 #include "SDlogging.h"
@@ -51,7 +50,7 @@
 
 #define SIG_BUTTON 1U
 #define SEL_BUTTON 2U
-//#undef DEBUG
+#undef DEBUG
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,6 +59,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+// Handlers a ser utilizados en el código
 I2C_HandleTypeDef hi2c1;
 
 RTC_HandleTypeDef hrtc;
@@ -69,9 +70,9 @@ SPI_HandleTypeDef hspi1;
 TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
-
+#ifdef DEBUG
 UART_HandleTypeDef huart3;
-
+#endif
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
@@ -95,8 +96,8 @@ uint8_t button_pressed=0;
 uint32_t longPress;
 
 //u8x8_t u8x8;                    // u8x8 object
-volatile u8g2_t u8g2;
-volatile GPSdata gps;
+u8g2_t u8g2;
+GPSdata gps;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,12 +116,15 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* TIM IT handler*/
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER TIM\r\n", strlen("ENTER TIM\r\n"),1000);
 #endif
-	Screen_update();
+
+	updateScreen();	// Screen update
+
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT TIM\r\n", strlen("EXIT TIM\r\n"),1000);
 #endif
@@ -131,15 +135,19 @@ void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
 	/*uint32_t mili; //contador en milisegundos
 	mili = HAL_GetTick();
 	char tiempo[sizeof(uint32_t)*8+1];*/
+
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER IT_RXIDLE\r\n", strlen("ENTER IT_RXIDLE\r\n"),1000);
 	HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, strlen(usart_rx_dma_buffer),1000);
 #endif
-	update_GPS_from_NMEA();
+
+	updateGPS();
 	GPSupdated = 1;
+
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT IT_RXIDLE\r\n", strlen("EXIT IT_RXIDLE\r\n"),1000);
 #endif
+
 	/*
 	sprintf(tiempo, "%lu",HAL_GetTick()-mili);
 	HAL_UART_Transmit(huart, (uint8_t *)tiempo, strlen(tiempo),1000);*/
@@ -188,18 +196,17 @@ void check_buttons()
 	button_pressed = 0;
 }
 
+/**
+  * @brief  Init and setup Sreen, GPS, SD.
+  * @retval int
+  */
 void Setup()
 {
-	  Screen_init(&u8g2);
+	initScreen(&u8g2); // Screen init, clear, home screen set
 
-	  HAL_Delay(1000);
+	HAL_Delay(1000);
 
-	  GPS_init(&gps);
-	  configure_GPS();
-
-	  HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);
-	  HAL_TIM_Base_Start_IT(&htim3);
-	  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE); 			// enable idle line interrupt
+	initGPS(&gps);	// Initialize default values for gps object
 }
 
 /* USER CODE END 0 */
@@ -237,12 +244,19 @@ int main(void)
   MX_RTC_Init();
   MX_FATFS_Init();
   MX_SPI1_Init();
+#ifdef DEBUG
   MX_USART3_UART_Init();
+#endif DEBUG
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
+  /*Setup GPS model, OLED and SD*/
   Setup();
 
+  /*Manual peripherial config*/
+  HAL_UART_Receive_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);	//Configure DMA
+  HAL_TIM_Base_Start_IT(&htim3);	//Configure TIM3 for OLED update
+  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);	// enable idle line interrupt
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -253,14 +267,16 @@ int main(void)
 
   while (1)
   {
-	if(GPSupdated)
-	{
-		__HAL_UART_DISABLE_IT(UART1, UART_IT_IDLE);
-		log_data();
-		GPSupdated = 0;
-		__HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);
-	}
-	check_buttons();
+
+	  /* Is there new position info?*/
+	  if(GPSupdated)
+	  {
+		  __HAL_UART_DISABLE_IT(UART1, UART_IT_IDLE);	//disables IT util data is updated
+		  log_data();	// Saves data in SD
+		  GPSupdated = 0;
+		  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);	// Enables IT again
+	  }
+	  check_buttons();
 
     /* USER CODE END WHILE */
 
@@ -527,7 +543,7 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE END USART1_Init 2 */
 
 }
-
+#ifdef DEBUG
 /**
   * @brief USART3 Initialization Function
   * @param None
@@ -560,6 +576,7 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE END USART3_Init 2 */
 
 }
+#endif
 
 /**
   * Enable DMA controller clock

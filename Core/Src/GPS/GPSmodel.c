@@ -8,7 +8,7 @@
  ============================================================================
  hdma->Instance->CMAR
  */
-#include "GPSmodel.h"
+#include "GPS/GPSmodel.h"
 
 
 /**
@@ -26,7 +26,11 @@ GPSdata * CreateGPS()
     return newGPS;
 }*/
 
-void GPS_init(GPSdata * self)
+/**
+  * @brief  Init GPS attributes.
+  * @retval -
+  */
+void initGPSmodel(GPSdata * self)
 {
 	  self->latitude = 0;
 	  self->longitude = 0;

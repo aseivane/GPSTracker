@@ -4,7 +4,8 @@
  *  Created on: 4 ene. 2021
  *      Author: z0042kvk
  */
-#include "tools.h"
+#include "GPS/tools.h"
+#include <string.h>
 
 int pow_10(uint8_t n)
 {
