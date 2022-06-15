@@ -140,6 +140,21 @@ void  get_fields(uint8_t* line, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
 	get_value(fields, field_count , fields_array);
 }
 
+
+uint8_t is_sentence_complete(uint8_t *message, uint8_t *tok)
+{
+	uint8_t* aux;
+	//checkea que la frase este completa
+	for(aux = tok;
+			*aux != '\r' && *aux != END_OF_STRING && (aux-message) < DMA_BUFF_SIZE;
+			aux++);
+	//si llego al final, devuelve NULL
+	if((aux-message) == DMA_BUFF_SIZE || *aux == END_OF_STRING)
+		return FALSE;
+	else return TRUE;
+
+}
+
 /** @brief Returns the number of commas in a sentence.
  *
  *  Starts where the pointer "string" is pointing and stops when an "*" is found.
@@ -158,46 +173,30 @@ uint8_t coma_count(uint8_t* string)
 	return count;
 }
 
-/** @brief Returns a pointer to the first aparition of message in prtSartBuff.
+/** @brief Returns a pointer to the first aparition of "$" in prtSartBuff.
  *
- *  Starts where the pointer "string" to the first aparition of *message in 
- *  *prtSartBuff
+ *  Starts at prtSartBuff address and runs through the string until the end or until
+ *  it fins a match. Whatever comes first.
  *
  *  @param ptrStartBuff pointer that refers to where is expected tu start looking for.
- *  @param message text that wants to be found.
- *  @return Number of commas.
+ *  @return ptrAux. NULL if there is no match.
  */
-uint8_t* start_sentence_ptr(uint8_t *ptrStartBuff, uint8_t *message)
+uint8_t* findStartChar(uint8_t *ptrStartBuff)
 {
-	uint8_t* tok = ptrStartBuff;
+	uint8_t* ptrAux = ptrStartBuff;	// aux pointer for moving through the string
 
-	for( tok = ptrStartBuff ;
-		0 != strncmp(tok,message, strlen(message));
-		tok++);
-		
-	return tok;
+	for( ptrAux = ptrStartBuff ;
+		( '$' != *ptrAux ) || ( DMA_BUFF_SIZE < ptrAux - ptrStartBuff );
+		ptrAux++);	//starts at the begining. Ends if it matches "$" or end of buffer
 	
-	/*
-	if((tok-ptrStartBuff) == DMA_BUFF_SIZE )
-		return NULL;
-	else return ++tok;*/
+	if( DMA_BUFF_SIZE == ( ptrAux - ptrStartBuff ) )
+		ptrAux= NULL;	// returns NULL if it didn't find a match
+	
+	return ptrAux;
 }
 
-uint8_t is_sentence_complete(uint8_t *message, uint8_t *tok)
-{
-	uint8_t* aux;
-	//checkea que la frase este completa
-	for(aux = tok;
-			*aux != '\r' && *aux != END_OF_STRING && (aux-message) < DMA_BUFF_SIZE;
-			aux++);
-	//si llego al final, devuelve NULL
-	if((aux-message) == DMA_BUFF_SIZE || *aux == END_OF_STRING)
-		return FALSE;
-	else return TRUE;
 
-}
-
-uint8_t* get_sentence_ptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
+uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
 {
 	uint8_t* tok;
 	uint8_t* aux;
