@@ -1,2 +1,2 @@
-../Core/Src/OLED/u8g2/u8x8_d_uc1617.c:71:9:u8x8_d_uc1617_common	32	static
-../Core/Src/OLED/u8g2/u8x8_d_uc1617.c:219:9:u8x8_d_uc1617_jlx128128	24	static
+../Core/Src/oled/u8g2/u8x8_d_uc1617.c:71:9:u8x8_d_uc1617_common	32	static
+../Core/Src/oled/u8g2/u8x8_d_uc1617.c:219:9:u8x8_d_uc1617_jlx128128	24	static

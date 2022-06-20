@@ -46,15 +46,22 @@ void initGPS(GPSdata * _gps)
   */
 void updateGPS()
 {
-	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
 	uint8_t* ptrSentence;
 	extern uint8_t usart_rx_dma_buffer[];
 	uint8_t copy_buffer[MAX_NMEA_LEN];
 
+	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
+	for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
+			        memset(fields[i], END_OF_STRING, FIELD_BUFF);
+
 	memcpy(copy_buffer, usart_rx_dma_buffer, MAX_NMEA_LEN);
 
-	ptrSentence = get_sentence_ptr(copy_buffer, "GPGGA", NULL);
+	getMessageFields( copy_buffer, "GPGGA", fields );
 
+	//GPS_update(&gps, fields, GNGGA);
+
+	//ptrSentence = get_sentence_ptr(copy_buffer, "GPGGA", NULL);
+	/*
 	if( ptrSentence != NULL )
 	{
 	  if( is_sentence_complete(copy_buffer, ptrSentence) )
@@ -63,14 +70,14 @@ void updateGPS()
 		  get_fields(ptrSentence , fields);
 		  GPS_update(&gps, fields, GNGGA);
 	  }
-	}
-
+	}*/
+	/*
 	if(!(time_updated && date_updated))
 	{
 		updateTime(copy_buffer);
-	}
+	}*/
 }
-
+/*
 void updateTime(uint8_t copy_buffer[])
 {
 	uint8_t* ptrSentence;
@@ -99,7 +106,7 @@ void updateTime(uint8_t copy_buffer[])
 			  }
 		}
 	}
-}
+}*/
 
 uint8_t setDate(uint8_t** fields)
 {

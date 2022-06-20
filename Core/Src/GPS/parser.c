@@ -1,5 +1,19 @@
-#include "GPS/parser.h"
+/** @file parser.c
+ *  @brief NMEA parser.
+ *
+ *  This library contains tools for parsing NMEA code
+ *  for embedded systems. Insted of chars, it uses uint8_t.
+ *
+ *  @author Andres Seivane
+ *  @bug Sin corroborar stop de los loop segun tamaño de la string
+ * o bloque de memoria
+ */
 
+#include "../../Inc/GPS/parser.h"
+#include <stdint.h> 
+#include <stdio.h> 
+
+//#define WINDOWS 
 
 #ifdef algo
 #ifndef strsep
@@ -72,132 +86,204 @@ uint8_t CRC_check( unsigned char* mystring)
 }
 #endif
 
-
-void get_value(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF])
+/** @brief Returns the message fields in a given matrix.
+ *
+ *  @param fields array of pointers to each comma
+ *  @param field_count count o fields to copy
+ *  @param dest matrix to copy the values
+ *  @return -
+ */
+void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF])
 {
-	uint8_t index;
-	for(index = 0; index<field_count;index++)
+	for(uint8_t index = 0; index<field_count;index++)
 	{
-		//limpia el buffer
-		memset(dest[index], END_OF_STRING, FIELD_BUFF);
-
 		if( fields[index] == NULL) return;
 
-		if (! fields[index+1] ) //si el siguiente es nulo busca hasta el asterisco
+		/* if the next char in fields[index] string is a comma
+		 * it means the field is empty */
+		if (COMA == *(fields[index] + NEXT) ||
+			END_STAR == *(fields[index] + NEXT)) 
 		{
-			for (uint8_t i=0; fields[index][i] != END_STAR; i++)
-				dest[index][i] = fields[index][i];
-			return;
+			;
 		}
-		//si no hay valor sale
-		if( ( fields[index+1] - fields[index] ) < 1 ) return;
-		//copia lo que esta entre las dos comas al buffer
-		memcpy(dest[index], fields[index], fields[index+1] - fields[index] -1 );
-		dest[index][fields[index+1] - fields[index]] = '\0';//agrega el fin de cadena
+		else
+		{
+			/* checks if it's the last pointer with data*/
+			if (fields[index + NEXT])
+			{
+				memcpy( dest[index], fields[index] + NEXT, fields[NEXT + index] - fields[index] - 1);
+			}
+			/* if it's the last pointer, copies char by char until * */
+			else
+			{
+				uint8_t subIndex = 0;
+				do
+				{
+					/* copy until * */
+					dest[index][subIndex] = fields[index][subIndex + NEXT];
+				} while ( fields[index][++subIndex + NEXT] != END_STAR);
+			}
+		}		
 	}
 }
 
-
-void  get_fields(uint8_t* line, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
+/** @brief Returns the message fields in a given matrix.
+ *
+ *  @param ptrMessage pointer to the start of the message.
+ *  @param ptrTalker pointer to the talker from wich get the message.
+ *  @param fieldsArray matrix to copy the values
+ *  @return -
+ */
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t** fields_array )
 {
-	uint8_t i;
-	uint8_t* fields[FIELD_BUFF];
 
-	for(i = 0; i<FIELD_BUFF; i++)
+	uint8_t i;
+	/* define an array of pointer to reference where each value 
+	* is allocated in the message */
+	uint8_t* fields[FIELD_BUFF];
+	uint8_t* auxPtrMessage;
+
+	for(i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
 		fields[i] = NULL;
 
-	uint8_t field_count = coma_count(line);
-	line++; //avanza la primer coma
+	auxPtrMessage = getMessageptr( ptrMessage, ptrTalker, NULL );
+	if (NULL == auxPtrMessage) return; // if the talkers is not found, return
+
+	if ( ! isSentenceComplete( ptrMessage, auxPtrMessage ) ) return;
+	
+
+	uint8_t field_count = coma_count(auxPtrMessage);
 
 	for(i = 0; i< field_count; i++)
 	{
-
-		fields[i] = line;
-		for(line; !( (*line) == COMA || (*line) == END_STAR); line++);
-		line++;
+		for(auxPtrMessage; !( (*auxPtrMessage) == COMA || (*auxPtrMessage) == END_STAR); auxPtrMessage++);
+		fields[i] = auxPtrMessage;
+		auxPtrMessage++;
 	}
 	fields[i] = NULL;
-/*
-	for (i =0; i<FIELD_BUFF; i++)
-	{
-		memcpy(fields_array[i], "hola", strlen("hola")+1);
-		printf("fields_array[%d] %s", i, fields_array[i]);
-	}*/
 
-	get_value(fields, field_count , fields_array);
+	copyValues(fields, field_count , fields_array);
 }
 
-uint8_t coma_count(uint8_t* string)
+/** @brief Checks if the message is complete.
+ *
+ *   Uses ptrStart to checks if there is al \r o \0 in the message.
+ *
+ *  @param ptrStart pointer to look where to start from
+ *  @param ptrMessage pointer to the start of the message.
+ *  @return True or False.
+ */
+uint8_t isSentenceComplete(uint8_t *ptrMessage, uint8_t *ptrStart)
 {
-	uint8_t count;
-	//aumenta el puntero hasta que encuentra una coma. Cuando la encuettra avanza
-	//count y se va separando del inicio del puntero. Cuando no encuentra la coma
-	//sigue aumentando el puntero hasta lelgar al final.
-	for (count=0; string[count] != END_STAR; string[count]==COMA ? count++ : *string++);
-	return count;
-}
-
-uint8_t* start_sentence_ptr(uint8_t *ptrStartBuff, uint8_t *message)
-{
-	uint8_t* tok;
-	for( tok = message;
-			((*tok) != START_PESOS || (*tok) == END_OF_STRING) &&
-					(tok - ptrStartBuff) < DMA_BUFF_SIZE;
-			tok++);
-	if((tok-ptrStartBuff) == DMA_BUFF_SIZE )
-		return NULL;
-	else return ++tok;
-}
-
-uint8_t is_sentence_complete(uint8_t *message, uint8_t *tok)
-{
-	uint8_t* aux;
+	uint8_t* ptrAux;
 	//checkea que la frase este completa
-	for(aux = tok;
-			*aux != '\r' && *aux != END_OF_STRING && (aux-message) < DMA_BUFF_SIZE;
-			aux++);
+	for(ptrAux = ptrStart;
+			*ptrAux != '\r' && *ptrAux != END_OF_STRING && (ptrAux-ptrMessage) < DMA_BUFF_SIZE;
+			ptrAux++);
 	//si llego al final, devuelve NULL
-	if((aux-message) == DMA_BUFF_SIZE || *aux == END_OF_STRING)
+	if((ptrAux-ptrMessage) == DMA_BUFF_SIZE || *ptrAux == END_OF_STRING)
 		return FALSE;
 	else return TRUE;
 
 }
 
-uint8_t* get_sentence_ptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
+/** @brief Returns the number of commas in a sentence.
+ *
+ *  Starts where the pointer "string" is pointing and stops when an "*" is found.
+ *
+ *  @param string pointer that refers to where is expected tu start looking for.
+ *  @return Number of commas.
+ */
+uint8_t coma_count(uint8_t* ptrMessage)
+{
+	uint8_t count=0U;
+	//aumenta el puntero hasta que encuentra una coma. Cuando la encuetra avanza
+	//count y se va separando del inicio del puntero. Cuando no encuentra la coma
+	//sigue aumentando el puntero hasta llegar al final.
+	for (count=0U; ptrMessage[count] != END_STAR; 
+		 ptrMessage[count]==COMA ? count++ : *ptrMessage++);
+	return count;
+}
+
+/** @brief Returns a pointer to the first aparition of "$" in prtSartBuff.
+ *
+ *  Starts at prtSartBuff address and runs through the string until the end or until
+ *  it fins a match. Whatever comes first.
+ *
+ *  @param ptrStartBuff pointer that refers to where is expected tu start looking for.
+ *  @return ptrAux. NULL if there is no match.
+ */
+uint8_t* findStartChar( uint8_t* ptrMessage, uint8_t *ptrStart )
+{
+	uint8_t* ptrAux ;	// aux pointer for moving through the string
+	for( ptrAux = ptrStart ;
+		( '$' != *ptrAux ) && ( DMA_BUFF_SIZE > (ptrAux - ptrMessage) );
+		ptrAux++);	//starts at the begining. Ends if it matches "$" or end of buffer
+	
+	if( DMA_BUFF_SIZE == ( ptrAux - ptrMessage ) )
+		ptrAux= NULL;	// returns NULL if it didn't find a match
+	
+	return ptrAux;
+}
+
+#ifdef WINDOWS
+void printTalker(const char *message)
+{
+	char talker[6];
+	memcpy(talker, message , 5);
+	printf("Talker %s\r\n", talker);
+}
+#endif
+
+/** @brief Returns a pointer to the first aparition of type string.
+ *
+ *  Starts at message address and runs through the string until the end or until
+ *  it fins a match. Whatever comes first.
+ *
+ *  @param message pointer that refers to where is expected tu start looking for.
+ *  @param type string to find. NMEA Talker
+ *  @return token to start of message. NULL if there is no match.
+ */
+uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
 {
 	uint8_t* tok;
-	uint8_t* aux;
-	const char * aux_type;
+	const char * type_offset;
+	uint8_t* tok_offset;
 
-	if(init_ptr == NULL) tok = message;
+	/* assign aux pointers */
+	if ( NULL == init_ptr ) tok = message;
 	else tok = init_ptr;
-	aux_type= type;
+
 
 	do
 	{
-	  type = aux_type;
-	  if( !(tok = start_sentence_ptr(message,tok) ) ) return NULL;
+		if( !(tok = findStartChar(message, tok) ) ) return NULL; //looks for next $ ocurrence
+		tok++;	// findStartChar return a pointer to $. moves one more 
+		#ifdef WINDOWS
+		printTalker(tok);
+		#endif
 
-	  while((*tok) == (*type))
-	  {
-		  tok++;
-		  type++;
-	  }
-	}while ((*type) != END_OF_STRING &&
-			(tok-message) < DMA_BUFF_SIZE);
+		type_offset= type;
+		tok_offset = tok;
+
+		/* compares the chars in type string
+		 * until the end or a failed match
+		 */
+		while( ( *tok_offset ) == ( *type_offset )
+				&& END_OF_STRING != ( *type_offset ) )
+		{
+			tok_offset++;	// moves the pointer
+			type_offset++;
+		}
+	/* loop until reach the end of the buffer or 
+	 * type_offset point to '\0', which means the type matched
+	 * in the message
+	 */ 
+	}while ( END_OF_STRING != (*type_offset) &&
+			DMA_BUFF_SIZE > (tok-message) );
 
 	//checkea que haya cortado por coincidencia y no por fin del buffer
-	if((*type) != END_OF_STRING) return NULL;
+	if((*type_offset) != END_OF_STRING) return NULL;
 
 	return tok;
-
-    /*
-
-    if ( !CRC_check(tok))
-    {
-        //printf("get_sentence CRC incorrecto\r\n");
-        return NULL;
-    }*/
-
-
 }

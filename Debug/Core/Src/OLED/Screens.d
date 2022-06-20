@@ -1,4 +1,4 @@
-Core/Src/OLED/Screens.o: ../Core/Src/OLED/Screens.c \
+Core/Src/oled/Screens.o: ../Core/Src/oled/Screens.c \
  ../Core/Inc/OLED/Screens.h ../Core/Inc/OLED/u8g2.h \
  ../Core/Inc/OLED/u8x8.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \

@@ -1,7 +1,6 @@
 ../Core/Src/GPS/GPScontroller.c:32:6:initGPS	16	static
 ../Core/Src/GPS/GPScontroller.c:47:6:updateGPS	1064	static
-../Core/Src/GPS/GPScontroller.c:74:6:updateTime	520	static
-../Core/Src/GPS/GPScontroller.c:104:9:setDate	24	static
-../Core/Src/GPS/GPScontroller.c:116:9:setTime	24	static
-../Core/Src/GPS/GPScontroller.c:135:6:configGPS	80	static
-../Core/Src/GPS/GPScontroller.c:152:6:GPS_1min_sleep	32	static
+../Core/Src/GPS/GPScontroller.c:111:9:setDate	24	static
+../Core/Src/GPS/GPScontroller.c:123:9:setTime	24	static
+../Core/Src/GPS/GPScontroller.c:142:6:configGPS	80	static
+../Core/Src/GPS/GPScontroller.c:159:6:GPS_1min_sleep	32	static

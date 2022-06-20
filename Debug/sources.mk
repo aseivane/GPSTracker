@@ -22,9 +22,9 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Core/Src/GPS \
-Core/Src/OLED \
-Core/Src/OLED/u8g2 \
 Core/Src \
+Core/Src/oled \
+Core/Src/oled/u8g2 \
 Core/Startup \
 Drivers/STM32F1xx_HAL_Driver/Src \
 FATFS/App \

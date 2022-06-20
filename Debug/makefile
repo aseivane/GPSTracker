@@ -15,8 +15,8 @@ RM := rm -rf
 -include FATFS/App/subdir.mk
 -include Drivers/STM32F1xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
--include Core/Src/OLED/u8g2/subdir.mk
--include Core/Src/OLED/subdir.mk
+-include Core/Src/oled/u8g2/subdir.mk
+-include Core/Src/oled/subdir.mk
 -include Core/Src/GPS/subdir.mk
 -include Core/Src/subdir.mk
 -include objects.mk
