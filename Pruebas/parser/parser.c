@@ -111,34 +111,43 @@ void get_value(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][
 	}
 }
 
-
-void  get_fields(uint8_t* line, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
+/** @brief Returns the message fields in a given matrix.
+ *
+ *  @param ptrMessage pointer to the start of the message.
+ *  @param ptrTalker pointer to the talker from wich get the message.
+ *  @param fieldsArray matrix to copy the values
+ *  @return -
+ */
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t **fields_array )
 {
-	uint8_t i;
-	uint8_t* fields[FIELD_BUFF];
 
-	for(i = 0; i<FIELD_BUFF; i++)
+	uint8_t i;
+	/* define an array of pointer to reference where each value 
+	* is allocated in the message */
+	uint8_t* fields[FIELD_BUFF];
+	uint8_t* auxPtrMessage;
+
+	for(i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
 		fields[i] = NULL;
 
-	uint8_t field_count = coma_count(line);
-	line++; //avanza la primer coma
+	auxPtrMessage = getMessageptr( ptrMessage, ptrTalker, NULL );
+	if (NULL == auxPtrMessage) return; // if the talkers is not found, return
+
+	if ( ! isSentenceComplete( ptrMessage, auxPtrMessage ) ) return;
+	
+
+	uint8_t field_count = coma_count(auxPtrMessage);
+	auxPtrMessage++; //avanza la primer coma
 
 	for(i = 0; i< field_count; i++)
 	{
-
-		fields[i] = line;
-		for(line; !( (*line) == COMA || (*line) == END_STAR); line++);
-		line++;
+		for(auxPtrMessage; !( (*auxPtrMessage) == COMA || (*auxPtrMessage) == END_STAR); auxPtrMessage++);
+		auxPtrMessage++;
+		fields[i] = auxPtrMessage;
 	}
 	fields[i] = NULL;
-/*
-	for (i =0; i<FIELD_BUFF; i++)
-	{
-		memcpy(fields_array[i], "hola", strlen("hola")+1);
-		printf("fields_array[%d] %s", i, fields_array[i]);
-	}*/
 
-	get_value(fields, field_count , fields_array);
+	//get_value(fields, field_count , fields_array);
 }
 
 /** @brief Checks if the message is complete.

@@ -30,8 +30,8 @@
 #include <stdlib.h> // para tener malloc
 #include <string.h> ///fucnioes de str y mem
 
-void get_value(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF]);
-void  get_fields(uint8_t* line, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF]  );
+void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF]);
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t **fields_array );
 uint8_t coma_count(uint8_t* string);
 uint8_t* findStartChar( uint8_t* ptrMessage, uint8_t *ptrStart );
 uint8_t isSentenceComplete(uint8_t *message, uint8_t *tok);
