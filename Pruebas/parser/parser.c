@@ -13,6 +13,7 @@
 #include <stdint.h> 
 #include <stdio.h> 
 
+#define WINDOWS 
 
 #ifdef algo
 #ifndef strsep
@@ -140,16 +141,23 @@ void  get_fields(uint8_t* line, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
 	get_value(fields, field_count , fields_array);
 }
 
-
-uint8_t is_sentence_complete(uint8_t *message, uint8_t *tok)
+/** @brief Checks if the message is complete.
+ *
+ *   Uses ptrStart to checks if there is al \r o \0 in the message.
+ *
+ *  @param ptrStart pointer to look where to start from
+ *  @param ptrMessage pointer to the start of the message.
+ *  @return True or False.
+ */
+uint8_t isSentenceComplete(uint8_t *ptrMessage, uint8_t *ptrStart)
 {
-	uint8_t* aux;
+	uint8_t* ptrAux;
 	//checkea que la frase este completa
-	for(aux = tok;
-			*aux != '\r' && *aux != END_OF_STRING && (aux-message) < DMA_BUFF_SIZE;
-			aux++);
+	for(ptrAux = ptrStart;
+			*ptrAux != '\r' && *ptrAux != END_OF_STRING && (ptrAux-ptrMessage) < DMA_BUFF_SIZE;
+			ptrAux++);
 	//si llego al final, devuelve NULL
-	if((aux-message) == DMA_BUFF_SIZE || *aux == END_OF_STRING)
+	if((ptrAux-ptrMessage) == DMA_BUFF_SIZE || *ptrAux == END_OF_STRING)
 		return FALSE;
 	else return TRUE;
 
@@ -162,14 +170,14 @@ uint8_t is_sentence_complete(uint8_t *message, uint8_t *tok)
  *  @param string pointer that refers to where is expected tu start looking for.
  *  @return Number of commas.
  */
-uint8_t coma_count(uint8_t* string)
+uint8_t coma_count(uint8_t* ptrMessage)
 {
 	uint8_t count=0U;
 	//aumenta el puntero hasta que encuentra una coma. Cuando la encuetra avanza
 	//count y se va separando del inicio del puntero. Cuando no encuentra la coma
 	//sigue aumentando el puntero hasta llegar al final.
-	for (count=0U; string[count] != END_STAR; 
-		 string[count]==COMA ? count++ : *string++);
+	for (count=0U; ptrMessage[count] != END_STAR; 
+		 ptrMessage[count]==COMA ? count++ : *ptrMessage++);
 	return count;
 }
 
@@ -181,19 +189,27 @@ uint8_t coma_count(uint8_t* string)
  *  @param ptrStartBuff pointer that refers to where is expected tu start looking for.
  *  @return ptrAux. NULL if there is no match.
  */
-uint8_t* findStartChar(uint8_t *ptrStartBuff)
+uint8_t* findStartChar( uint8_t* ptrMessage, uint8_t *ptrStart )
 {
-	uint8_t* ptrAux = ptrStartBuff;	// aux pointer for moving through the string
-
-	for( ptrAux = ptrStartBuff ;
-		( '$' != *ptrAux ) || ( DMA_BUFF_SIZE < ptrAux - ptrStartBuff );
+	uint8_t* ptrAux ;	// aux pointer for moving through the string
+	for( ptrAux = ptrStart ;
+		( '$' != *ptrAux ) && ( DMA_BUFF_SIZE > (ptrAux - ptrMessage) );
 		ptrAux++);	//starts at the begining. Ends if it matches "$" or end of buffer
 	
-	if( DMA_BUFF_SIZE == ( ptrAux - ptrStartBuff ) )
+	if( DMA_BUFF_SIZE == ( ptrAux - ptrMessage ) )
 		ptrAux= NULL;	// returns NULL if it didn't find a match
 	
 	return ptrAux;
 }
+
+#ifdef WINDOWS
+void printTalker(const char *message)
+{
+	char talker[6];
+	memcpy(talker, message , 5);
+	printf("Talker %s\r\n", talker);
+}
+#endif
 
 /** @brief Returns a pointer to the first aparition of type string.
  *
@@ -214,12 +230,15 @@ uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
 	if ( NULL == init_ptr ) tok = message;
 	else tok = init_ptr;
 
+
 	do
 	{
-		if( !(tok = findStartChar(tok) ) ) return NULL; //looks for next $ ocurrence
-
+		if( !(tok = findStartChar(message, tok) ) ) return NULL; //looks for next $ ocurrence
 		tok++;	// findStartChar return a pointer to $. moves one more 
-		
+		#ifdef WINDOWS
+		printTalker(tok);
+		#endif
+
 		type_offset= type;
 		tok_offset = tok;
 
@@ -233,7 +252,7 @@ uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
 			type_offset++;
 		}
 	/* loop until reach the end of the buffer or 
-	 * type_offset point to '\0', ehich means the type matched
+	 * type_offset point to '\0', which means the type matched
 	 * in the message
 	 */ 
 	}while ( END_OF_STRING != (*type_offset) &&
