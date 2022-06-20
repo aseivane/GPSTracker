@@ -13,6 +13,7 @@
 #define END_OF_STRING '\0'
 #define COMA ','
 #define FIELD_BUFF 20
+#define NEXT 1
 
 #ifndef DMA_BUFF_SIZE
 #define DMA_BUFF_SIZE 267
@@ -31,7 +32,7 @@
 #include <string.h> ///fucnioes de str y mem
 
 void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF]);
-void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t **fields_array );
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t** fields_array );
 uint8_t coma_count(uint8_t* string);
 uint8_t* findStartChar( uint8_t* ptrMessage, uint8_t *ptrStart );
 uint8_t isSentenceComplete(uint8_t *message, uint8_t *tok);

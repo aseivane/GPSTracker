@@ -13,7 +13,7 @@
 #include <stdint.h> 
 #include <stdio.h> 
 
-#define WINDOWS 
+//#define WINDOWS 
 
 #ifdef algo
 #ifndef strsep
@@ -86,28 +86,44 @@ uint8_t CRC_check( unsigned char* mystring)
 }
 #endif
 
-
-void get_value(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF])
+/** @brief Returns the message fields in a given matrix.
+ *
+ *  @param fields array of pointers to each comma
+ *  @param field_count count o fields to copy
+ *  @param dest matrix to copy the values
+ *  @return -
+ */
+void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF])
 {
-	uint8_t index;
-	for(index = 0; index<field_count;index++)
+	for(uint8_t index = 0; index<field_count;index++)
 	{
-		//limpia el buffer
-		memset(dest[index], END_OF_STRING, FIELD_BUFF);
-
 		if( fields[index] == NULL) return;
 
-		if (! fields[index+1] ) //si el siguiente es nulo busca hasta el asterisco
+		/* if the next char in fields[index] string is a comma
+		 * it means the field is empty */
+		if (COMA == *(fields[index] + NEXT) ||
+			END_STAR == *(fields[index] + NEXT)) 
 		{
-			for (uint8_t i=0; fields[index][i] != END_STAR; i++)
-				dest[index][i] = fields[index][i];
-			return;
+			;
 		}
-		//si no hay valor sale
-		if( ( fields[index+1] - fields[index] ) < 1 ) return;
-		//copia lo que esta entre las dos comas al buffer
-		memcpy(dest[index], fields[index], fields[index+1] - fields[index] -1 );
-		dest[index][fields[index+1] - fields[index]] = '\0';//agrega el fin de cadena
+		else
+		{
+			/* checks if it's the last pointer with data*/
+			if (fields[index + NEXT])
+			{
+				memcpy( dest[index], fields[index] + NEXT, fields[NEXT + index] - fields[index] - 1);
+			}
+			/* if it's the last pointer, copies char by char until * */
+			else
+			{
+				uint8_t subIndex = 0;
+				do
+				{
+					/* copy until * */
+					dest[index][subIndex] = fields[index][subIndex + NEXT];
+				} while ( fields[index][++subIndex + NEXT] != END_STAR);
+			}
+		}		
 	}
 }
 
@@ -118,7 +134,7 @@ void get_value(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][
  *  @param fieldsArray matrix to copy the values
  *  @return -
  */
-void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t **fields_array )
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t** fields_array )
 {
 
 	uint8_t i;
@@ -137,17 +153,16 @@ void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t **fields
 	
 
 	uint8_t field_count = coma_count(auxPtrMessage);
-	auxPtrMessage++; //avanza la primer coma
 
 	for(i = 0; i< field_count; i++)
 	{
 		for(auxPtrMessage; !( (*auxPtrMessage) == COMA || (*auxPtrMessage) == END_STAR); auxPtrMessage++);
-		auxPtrMessage++;
 		fields[i] = auxPtrMessage;
+		auxPtrMessage++;
 	}
 	fields[i] = NULL;
 
-	//get_value(fields, field_count , fields_array);
+	copyValues(fields, field_count , fields_array);
 }
 
 /** @brief Checks if the message is complete.
