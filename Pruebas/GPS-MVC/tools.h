@@ -51,6 +51,10 @@ It evaluates 1 if a bit is set otherwise 0.
 
 #define ASCII_OFFSET 48
 
+#ifndef END_OF_STRING
+#define END_OF_STRING '\0'
+#endif
+
 int pow_10(uint8_t n);
 int ascii_to_int(uint8_t *str);
 void ascii_to_float(uint8_t* str, float* num);

@@ -45,12 +45,12 @@ int ascii_to_int(uint8_t *str)
   * @param ptrFloat pointer to float converted
   * @retval -
   */
-void ascii_to_float(uint8_t* ptrStr, float* ptrFloat)
+void ascii_to_float(const uint8_t* ptrStr, float* ptrFloat)
 {
     uint8_t coma;
     uint8_t size;
     uint8_t entero;
-    uint8_t* str=ptrStr;
+    const uint8_t* str=ptrStr;
 
     *ptrFloat = 0;  // cleans the float
 
@@ -60,16 +60,19 @@ void ascii_to_float(uint8_t* ptrStr, float* ptrFloat)
     for (size = 0; str[size] != '\0'; size++);
     size--;
 
+    /* makes all the number after the point an integer in ptrFloat*/
     for ( coma = 0; str[size-coma] != '.'; coma++)
         *ptrFloat += ( str[size-coma] - ASCII_OFFSET ) * pow_10( coma );
+    
+    *ptrFloat = (*ptrFloat)/pow_10(coma-1); //moves all the numbers after the coma
     coma++;
 
-    *ptrFloat = (*ptrFloat)/pow_10(coma-1);
-
+    /* makes all the number before the point an integer in ptrFloat*/
     for ( entero = coma ; (size+1) != entero; entero++)
         *ptrFloat += (str[size-entero] - 48)*pow_10(entero-coma);
 
-    if(ptrStr[0]=='-') *ptrFloat = -*ptrFloat;
+    /* checks if its negative */
+    if(ptrStr[0]=='-') *ptrFloat = -(*ptrFloat);
 }
 
 
