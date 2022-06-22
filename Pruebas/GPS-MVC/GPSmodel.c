@@ -48,16 +48,21 @@ void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
   TIME, LATITUDE, NoS, LONGITUDE, EoW,
   FIX, SIV, HDOP, ALTTUDE_GEOID, ALTTUDE_METER,
   GEO_SEP, GEO_SEP_METER, DIFF, DIFF_REF};
-
+  /* converts latitude field to float */
 	ascii_to_float(fields[LATITUDE], &(self->latitude) );
+
+  /* if the latitude is 0, it means the fields are empty, return */
+  if ( 0 == self->latitude) return;
+  
+  /* converts degrees to decimal */
 	NMEA_deg2dec(&(self->latitude));
-	if(*(fields[NoS]) == 'S')
+	if(*(fields[NoS]) == 'S') // changes the sign if needed
 			self->latitude = -self->latitude;
 
-	//self->longitude = NMEA_deg2dec( fields[LONGITUDE], 3 );
+  /* converts longitude field to float */
 	ascii_to_float(fields[LONGITUDE], &(self->longitude) );
 	NMEA_deg2dec(&(self->longitude));
-	if(*(fields[EoW])== 'W')
+	if(*(fields[EoW])== 'W')  // changes the sign if needed
 			self->longitude = -self->longitude;
 
 	ascii_to_int(fields[SIV], &(self->satellites_in_view));
@@ -68,7 +73,7 @@ void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 
 void NMEA_deg2dec(float* number)
 {
-	//if(!*number) return;
+	if(0 == *number) return;
 	*number/=100;
 	int integer = (int) *number;//grados
 	*number = (*number - (float)integer)*100;// quedan solo los minutos y sus decimales

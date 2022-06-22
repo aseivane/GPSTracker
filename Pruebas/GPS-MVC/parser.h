@@ -20,7 +20,7 @@
 #define NEXT 1
 
 #ifndef DMA_BUFF_SIZE
-#define DMA_BUFF_SIZE 267
+#define DMA_BUFF_SIZE 650
 #endif
 
 #ifndef TRUE

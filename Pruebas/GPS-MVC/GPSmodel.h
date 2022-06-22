@@ -31,8 +31,7 @@ enum GPGSVfields {
 	TOTAL_MESSAGE, MESSAGE, SIV, SAT_NUMBER,
 	ELEVATION, AZIMUTH, SNR};
 
-enum GNZDAfields {
-	TIME, DAY, MONTH, YEAR};
+
 
 void initGPSmodel(GPSdata * self);
 void setGPSdata( GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker talker );

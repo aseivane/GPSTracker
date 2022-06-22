@@ -77,6 +77,7 @@ void ascii_to_float(const uint8_t* ptrStr, float* ptrFloat)
 
     *ptrFloat = 0;  // cleans the float
 
+    if ( (*ptrStr) == END_OF_STRING) return;
     if(str[0] == '-') str++;    // if it's negative, go on, will see it later
 
     /* checks the length to save the string library */
