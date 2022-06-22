@@ -33,8 +33,6 @@ void initGPS(GPSdata * _gps)
 {
 	initGPSmodel(_gps);
 
-
-
 	configGPS();	// Sends directives for selected NMEA talkers
 }
 
