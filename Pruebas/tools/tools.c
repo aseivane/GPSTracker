@@ -23,7 +23,11 @@ void ascii_to_int(uint8_t *str, int *result)
 {
     uint8_t negative = 0;
     /* if it's empty returns 0 */
-    if(!str || (*str) == END_OF_STRING) return 0;
+    if(!str || (*str) == END_OF_STRING) 
+    {
+        (*result) = 0;
+        return ;
+    }
 
     /* checks if it's negative*/
     if(*str == '-')
@@ -49,7 +53,7 @@ void ascii_to_int(uint8_t *str, int *result)
   * @param ptrStr pointer to string to convert
   * @retval strlen(ptrStr)
   */
-uint8_t myStrlen(uint8_t *ptrStr)
+uint8_t myStrlen(const uint8_t *ptrStr)
 {
     if(!ptrStr) return 0;
 
