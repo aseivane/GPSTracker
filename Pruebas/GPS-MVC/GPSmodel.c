@@ -25,10 +25,10 @@ void setGPSdata( GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker t
 {
     switch(talker)
     {
-    case GNGGA:
-    	updateGNGGA(self, fields);
+    case GPGGA:
+    	updateGPGGA(self, fields);
     	break;
-    case GNGLL:
+    case GPGLL:
 
     	break;
     default:
@@ -42,7 +42,7 @@ void setGPSdata( GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker t
   * @param fields array of uint8_t strings
   * @retval -
   */
-void updateGNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
+void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 {
   enum GNGGAfields {
   TIME, LATITUDE, NoS, LONGITUDE, EoW,
@@ -60,8 +60,18 @@ void updateGNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 	if(*(fields[EoW])== 'W')
 			self->longitude = -self->longitude;
 
-	self->satellites_in_view = (uint8_t) ascii_to_int(fields[SIV]);
+	ascii_to_int(fields[SIV], &(self->satellites_in_view));
 
-	self->altitude = (uint8_t) ascii_to_int(fields[ALTTUDE_METER]);
+	ascii_to_int(fields[ALTTUDE_METER], &(self->altitude));
 
+}
+
+void NMEA_deg2dec(float* number)
+{
+	//if(!*number) return;
+	*number/=100;
+	int integer = (int) *number;//grados
+	*number = (*number - (float)integer)*100;// quedan solo los minutos y sus decimales
+	*number /=60;
+	*number = (float) integer + (*number); //a los grados le agrega los minutos /60 para que sean grados
 }

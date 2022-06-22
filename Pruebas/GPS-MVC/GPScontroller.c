@@ -35,5 +35,5 @@ void updateGPS(GPSdata* _gps, uint8_t* bufferDMA)
 
 	getMessageFields( copy_buffer, "GPGGA", fields );
 
-  setGPSdata();
+  setGPSdata(_gps, fields, GPGGA);
 }

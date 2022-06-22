@@ -24,8 +24,8 @@ typedef struct time {
 } GPStime;
 
 enum NMEAtalker {
-	GNGGA, GNGLL, GPGSA, BDGSA, GPGSV,
-	BDGSV, GNRMC,GNVTG, GNZDA, GPTXT};
+	GPGGA, GPGLL, GPGSA, BDGSA, GPGSV,
+	BDGSV, GPRMC,GPVTG, GPZDA, GPTXT};
 
 enum GPGSVfields {
 	TOTAL_MESSAGE, MESSAGE, SIV, SAT_NUMBER,
@@ -36,5 +36,7 @@ enum GNZDAfields {
 
 void initGPSmodel(GPSdata * self);
 void setGPSdata( GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker talker );
+void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF]);
+void NMEA_deg2dec(float* number);
 
 #endif /* GPSMODEL_H_ */

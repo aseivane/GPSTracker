@@ -56,8 +56,9 @@ It evaluates 1 if a bit is set otherwise 0.
 #endif
 
 int pow_10(uint8_t n);
-int ascii_to_int(uint8_t *str);
-void ascii_to_float(uint8_t* str, float* num);
+void ascii_to_int(uint8_t *str, int *result);
+void ascii_to_float(const uint8_t* ptrStr, float* ptrFloat);
+uint8_t myStrlen(const uint8_t *ptrStr);
 void reverse(char* str, int len);
 uint8_t int_to_ascii(int x, char dest[], uint8_t d);
 void float_to_ascii(float n, uint8_t* res, uint8_t afterpoint);
