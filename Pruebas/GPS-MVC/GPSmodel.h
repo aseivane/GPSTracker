@@ -9,8 +9,8 @@
 typedef struct GPS {
    float latitude;
    float longitude;
+   float altitude;
    uint8_t satellites_in_view;
-   uint8_t altitude;
 } GPSdata;
 
 typedef struct time {
@@ -35,5 +35,6 @@ enum GNZDAfields {
 	TIME, DAY, MONTH, YEAR};
 
 void initGPSmodel(GPSdata * self);
+void setGPSdata( GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker talker );
 
 #endif /* GPSMODEL_H_ */

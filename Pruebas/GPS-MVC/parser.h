@@ -10,7 +10,11 @@
 
 #define START_PESOS '$'
 #define END_STAR	'*'
+
+#ifndef END_OF_STRING
 #define END_OF_STRING '\0'
+#endif
+
 #define COMA ','
 #define FIELD_BUFF 20
 #define NEXT 1
