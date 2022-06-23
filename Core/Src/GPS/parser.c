@@ -134,7 +134,7 @@ void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF]
  *  @param fieldsArray matrix to copy the values
  *  @return -
  */
-void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t** fields_array )
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
 {
 
 	uint8_t i;
@@ -244,10 +244,10 @@ void printTalker(const char *message)
  *  @param type string to find. NMEA Talker
  *  @return token to start of message. NULL if there is no match.
  */
-uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr)
+uint8_t* getMessageptr(uint8_t *message, const uint8_t *type,  uint8_t *init_ptr)
 {
 	uint8_t* tok;
-	const char * type_offset;
+	const uint8_t * type_offset;
 	uint8_t* tok_offset;
 
 	/* assign aux pointers */

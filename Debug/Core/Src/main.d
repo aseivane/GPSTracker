@@ -35,8 +35,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/OLED/Screens.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../Core/Inc/GPS/GPScontroller.h ../Core/Inc/fatfs_sd.h \
- ../Core/Inc/SDlogging.h
+ ../Core/Inc/GPS/GPScontroller.h ../Core/Inc/GPS/parser.h \
+ ../Core/Inc/fatfs_sd.h ../Core/Inc/SDlogging.h
 ../Core/Inc/OLED/Screens.h:
 ../Core/Inc/OLED/u8g2.h:
 ../Core/Inc/OLED/u8x8.h:
@@ -81,5 +81,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/OLED/Screens.h \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../FATFS/Target/user_diskio.h:
 ../Core/Inc/GPS/GPScontroller.h:
+../Core/Inc/GPS/parser.h:
 ../Core/Inc/fatfs_sd.h:
 ../Core/Inc/SDlogging.h:

@@ -108,7 +108,9 @@ static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_SPI1_Init(void);
+#ifdef DEBUG
 static void MX_USART3_UART_Init(void);
+#endif
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -132,25 +134,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_UART_RxIdleCallback(UART_HandleTypeDef *huart)
 {
-	/*uint32_t mili; //contador en milisegundos
-	mili = HAL_GetTick();
-	char tiempo[sizeof(uint32_t)*8+1];*/
 
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER IT_RXIDLE\r\n", strlen("ENTER IT_RXIDLE\r\n"),1000);
 	HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, strlen(usart_rx_dma_buffer),1000);
 #endif
 
-	updateGPS();
+	updateGPS(&gps, usart_rx_dma_buffer);
 	GPSupdated = 1;
+	updateDateTime( &hrtc, usart_rx_dma_buffer );
 
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT IT_RXIDLE\r\n", strlen("EXIT IT_RXIDLE\r\n"),1000);
 #endif
 
-	/*
-	sprintf(tiempo, "%lu",HAL_GetTick()-mili);
-	HAL_UART_Transmit(huart, (uint8_t *)tiempo, strlen(tiempo),1000);*/
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -183,10 +180,10 @@ void check_buttons()
 			if( ( HAL_GetTick() - longPress < LONG_TIME_PRESS) )
 				screen_number == 1 ? screen_number = 0 : screen_number++;
 			else
-				{
-					screen_power ^= 1 << 1;
-					u8g2_SetPowerSave(&u8g2, screen_power);
-				}
+			{
+				screen_power ^= 1 << 1;
+				u8g2_SetPowerSave(&u8g2, screen_power);
+			}
 			break;
 
 		case SEL_BUTTON:
@@ -198,13 +195,11 @@ void check_buttons()
 
 /**
   * @brief  Init and setup Sreen, GPS, SD.
-  * @retval int
+  * @retval -
   */
 void Setup()
 {
 	initScreen(&u8g2); // Screen init, clear, home screen set
-
-	HAL_Delay(1000);
 
 	initGPS(&gps);	// Initialize default values for gps object
 }
@@ -246,7 +241,7 @@ int main(void)
   MX_SPI1_Init();
 #ifdef DEBUG
   MX_USART3_UART_Init();
-#endif DEBUG
+#endif
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
@@ -269,10 +264,10 @@ int main(void)
   {
 
 	  /* Is there new position info?*/
-	  if(GPSupdated)
+	  if( GPSupdated )
 	  {
 		  __HAL_UART_DISABLE_IT(UART1, UART_IT_IDLE);	//disables IT util data is updated
-		  log_data();	// Saves data in SD
+		  //log_data();	// Saves data in SD
 		  GPSupdated = 0;
 		  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);	// Enables IT again
 	  }

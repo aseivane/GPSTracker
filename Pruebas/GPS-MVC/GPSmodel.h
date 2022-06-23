@@ -6,6 +6,17 @@
 #include <stdlib.h>
 #define FIELD_BUFF 20
 
+#ifdef DYNAMIC
+typedef struct satellite_in_view {
+   uint8_t index;
+   uint8_t number;
+   uint8_t elevation;
+   unsigned int azimut;
+   uint8_t SNR;
+   struct satellite_in_view* next;
+} satellite;
+#endif
+
 typedef struct GPS {
    float latitude;
    float longitude;

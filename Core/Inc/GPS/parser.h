@@ -10,7 +10,11 @@
 
 #define START_PESOS '$'
 #define END_STAR	'*'
+
+#ifndef END_OF_STRING
 #define END_OF_STRING '\0'
+#endif
+
 #define COMA ','
 #define FIELD_BUFF 20
 #define NEXT 1
@@ -32,10 +36,10 @@
 #include <string.h> ///fucnioes de str y mem
 
 void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF]);
-void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t** fields_array );
+void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] );
 uint8_t coma_count(uint8_t* string);
 uint8_t* findStartChar( uint8_t* ptrMessage, uint8_t *ptrStart );
 uint8_t isSentenceComplete(uint8_t *message, uint8_t *tok);
-uint8_t* getMessageptr(uint8_t *message, const char *type,  uint8_t *init_ptr);
+uint8_t* getMessageptr(uint8_t *message, const uint8_t *type,  uint8_t *init_ptr);
 
 #endif /* PARSER_H_ */

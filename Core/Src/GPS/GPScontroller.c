@@ -5,131 +5,119 @@
  *      Author: z0042kvk
  */
 
-#include <OLED/Screens.h>
 #include "GPS/GPScontroller.h"
-#include "GPS/GPSmodel.h"
-#include "GPS/parser.h"
 
-#include "main.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#undef DEBUG
-
-extern GPSdata gps;
-extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart1;
 
 #ifdef DEBUG
 extern UART_HandleTypeDef huart3;
 #endif
 
-extern DMA_HandleTypeDef hdma_usart1_rx;
-extern uint8_t time_updated;
-extern uint8_t date_updated;
 
-
+/**
+  * @brief  Init GPS attributes.
+  * @param self pointer to GPSdata object
+  * @retval -
+  */
 void initGPS(GPSdata * _gps)
 {
 	initGPSmodel(_gps);
 
-	configGPS();	// Sends directives for selected NMEA talkers
+	//configGPS();	// Sends directives for selected NMEA talkers
 }
 
 
 
 
 /**
-  * @brief
+  * @brief  Update GPS attributes.
+  * @param self pointer to GPSdata object
+  * @param bufferDMA pointer to UART DMA buffer
+  * @retval -
   */
-void updateGPS()
+void updateGPS(GPSdata* _gps, uint8_t* bufferDMA)
 {
-	uint8_t* ptrSentence;
-	extern uint8_t usart_rx_dma_buffer[];
 	uint8_t copy_buffer[MAX_NMEA_LEN];
 
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
 	for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
-			        memset(fields[i], END_OF_STRING, FIELD_BUFF);
+		memset(fields[i], END_OF_STRING, FIELD_BUFF);
 
-	memcpy(copy_buffer, usart_rx_dma_buffer, MAX_NMEA_LEN);
+	memcpy(copy_buffer, bufferDMA, MAX_NMEA_LEN);
 
-	getMessageFields( copy_buffer, "GPGGA", fields );
+	getMessageFields( copy_buffer, (uint8_t*) "GPGGA", fields );
 
-	//GPS_update(&gps, fields, GNGGA);
+	setGPSdata(_gps, fields, GPGGA);
 
-	//ptrSentence = get_sentence_ptr(copy_buffer, "GPGGA", NULL);
-	/*
-	if( ptrSentence != NULL )
-	{
-	  if( is_sentence_complete(copy_buffer, ptrSentence) )
-	  {
-		  //field_count = coma_count(ptrSentence);
-		  get_fields(ptrSentence , fields);
-		  GPS_update(&gps, fields, GNGGA);
-	  }
-	}*/
-	/*
-	if(!(time_updated && date_updated))
-	{
-		updateTime(copy_buffer);
-	}*/
 }
-/*
-void updateTime(uint8_t copy_buffer[])
+/**
+  * @brief  Update RTC date and time.
+  * @param self pointer to GPSdata object
+  * @param bufferDMA pointer to UART DMA buffer
+  * @retval -
+  */
+void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA)
 {
-	uint8_t* ptrSentence;
+	static uint8_t updatedTime = FALSE;
+	static uint8_t updatedDate = FALSE;
+
+	if ( TRUE == updatedTime && TRUE == updatedDate ) return;
+
+	uint8_t copy_buffer[DMA_BUFF_SIZE];
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
-	uint8_t f_to_char[100];
 
+	for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
+	memset(fields[i], END_OF_STRING, FIELD_BUFF);
 
-	ptrSentence = get_sentence_ptr(copy_buffer, "GPZDA", NULL);
-	if( ptrSentence != NULL )
-	{
-		#ifdef DEBUG
-		HAL_UART_Transmit(&huart3, (uint8_t *)"Sentence found\r\n", strlen("Sentence found\r\n"),1000);
-		#endif
-		if( is_sentence_complete(copy_buffer, ptrSentence) )
-		{
-			  get_fields(ptrSentence , fields);
-			  if( *(fields[0]) != '0' )
-			  {
-				  memcpy(f_to_char,fields[0],6);
-				  time_updated = setTime(f_to_char);
-			  }
+	memcpy(copy_buffer, bufferDMA, DMA_BUFF_SIZE);
 
-			  if(  *(fields[1]) != '0')
-			  {
-				  date_updated = setDate(fields);
-			  }
-		}
-	}
-}*/
+	getMessageFields( copy_buffer, (uint8_t*)"GPZDA", fields );
 
-uint8_t setDate(uint8_t** fields)
+	if ( '\0' == *(fields[TIME]) ) return;
+
+	if ( !updatedTime )
+	updatedTime = setTime( hrtc, fields[TIME] );
+
+	if ( '\0' == *(fields[DAY]) ) return;
+
+	if ( !updatedDate )
+	updatedDate = setDate( hrtc, fields );
+}
+
+uint8_t setDate(RTC_HandleTypeDef* hrtc, uint8_t fields[FIELD_BUFF][FIELD_BUFF])
 {
 	RTC_DateTypeDef Date;
+	int aux;
 
-  	Date.Date = (uint8_t) ascii_to_int(fields[1]);
-	Date.Month = (uint8_t) ascii_to_int(fields[2]);
-	Date.Year = (uint8_t) ascii_to_int(fields[3]+2);
+	ascii_to_int(fields[1], &aux);
+  	Date.Date = (uint8_t) aux;
 
-	HAL_RTC_SetDate(&hrtc, &Date,  RTC_FORMAT_BIN);
+  	ascii_to_int(fields[2], &aux);
+	Date.Month = (uint8_t) aux;
+
+	ascii_to_int(fields[3]+2, &aux);
+	Date.Year = (uint8_t) aux;
+
+	HAL_RTC_SetDate( hrtc, &Date,  RTC_FORMAT_BIN);
 	return 1U;
 }
 
-uint8_t setTime(uint8_t* f_to_char)
+uint8_t setTime(RTC_HandleTypeDef* hrtc, uint8_t fields[FIELD_BUFF])
 {
 	RTC_TimeTypeDef Time;
+	int aux;
 
-	f_to_char[6] = '\0';
-	Time.Seconds = (uint8_t) ascii_to_int(f_to_char+4);
-	f_to_char[4] = '\0';
-	Time.Minutes = (uint8_t) ascii_to_int(f_to_char+2);
-	f_to_char[2] = '\0';
-	Time.Hours = (uint8_t) ascii_to_int(f_to_char) - 3;
+	fields[6] = '\0';
+	ascii_to_int(fields+4, &aux);
+	Time.Seconds = (uint8_t) aux;
+	fields[4] = '\0';
+	ascii_to_int(fields+2, &aux);
+	Time.Minutes = (uint8_t) aux;
+	fields[2] = '\0';
+	ascii_to_int(fields, &aux);
+	Time.Hours = (uint8_t) aux - 3;
 
-	HAL_RTC_SetTime(&hrtc, &Time,  RTC_FORMAT_BIN);
+	HAL_RTC_SetTime(hrtc, &Time,  RTC_FORMAT_BIN);
 	return 1U;
 }
 

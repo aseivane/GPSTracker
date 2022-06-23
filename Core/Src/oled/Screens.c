@@ -175,7 +175,7 @@ void initScreen(u8g2_t* u8g2)
 	  u8g2_ClearDisplay(u8g2);	// Clean screen for fist use
 	  u8g2_SetPowerSave(u8g2, 0U);	// Disables Energy save
 
-	  screen_number = 0;	// set home screen
+	  screen_number = 1;	// set home screen
 }
 
 /**

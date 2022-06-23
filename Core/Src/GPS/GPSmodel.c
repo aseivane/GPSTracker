@@ -34,108 +34,69 @@ void initGPSmodel(GPSdata * self)
 {
 	  self->latitude = 0;
 	  self->longitude = 0;
-	  self->GPS_fix = 0;
 	  self->satellites_in_view = 0;
-	  self->HDOP = 0;
 	  self->altitude = 0;
-	  //self->sat_list = NULL;
 }
 
-// "Property" setter:
-void GPS_update(GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker talker)
+/**
+  * @brief  Saves data in GPSdata object from array of fields
+  * @param self pointer to GPSdata object
+  * @param fields array of uint8_t strings
+  * @param talker NMEAtalker 
+  * @retval -
+  */
+void setGPSdata( GPSdata * self, uint8_t fields[][FIELD_BUFF], enum NMEAtalker talker )
 {
     switch(talker)
     {
-    case GNGGA:
-    	if(fields[1][0] != '\0')  GPS_update_GNGGA(self, fields);
+    case GPGGA:
+    	updateGPGGA(self, fields);
     	break;
-    case GNGLL:
+    case GPGLL:
 
     	break;
-    case GPGSA:
-
-    	break;
-    case BDGSA:
-
-    	break;
-    case GPGSV:
-
-    	break;
-    case BDGSV:
-
-    	break;
-    case GNRMC:
-
-    	break;
-    case GNVTG:
-
-    	break;
-    case GNZDA:
-
-    	break;
-    case GPTXT:
-
-    	break;
+    default:
+      break;
     }
 }
-
-void fields_to_GPS(GPSdata * self, uint8_t fields[][FIELD_BUFF])
+/**
+  * @brief  Saves data in GPSdata from the fields of GNGGA talker
+  * @param self pointer to GPSdata object
+  * @param fields array of uint8_t strings
+  * @retval -
+  */
+void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 {
-	enum GNGGAfields {
-		TIME, LATITUDE, NoS, LONGITUDE, EoW,
-		FIX, SIV, HDOP, ALTTUDE_GEOID, ALTTUDE_METER,
-		GEO_SEP, GEO_SEP_METER, DIFF, DIFF_REF}; //SIV = SATELLITES IN VIEW
-	//self->latitude = NMEA_deg2dec( fields[LATITUDE], 2 );
+  enum GNGGAfields {
+  TIME, LATITUDE, NoS, LONGITUDE, EoW,
+  FIX, SIV, HDOP, ALTTUDE_GEOID, ALTTUDE_METER,
+  GEO_SEP, GEO_SEP_METER, DIFF, DIFF_REF};
+  /* converts latitude field to float */
 	ascii_to_float(fields[LATITUDE], &(self->latitude) );
+
+  /* if the latitude is 0, it means the fields are empty, return */
+  if ( 0 == self->latitude) return ;
+  
+  /* converts degrees to decimal */
 	NMEA_deg2dec(&(self->latitude));
-	if(*(fields[NoS]) == 'S')
+	if(*(fields[NoS]) == 'S') // changes the sign if needed
 			self->latitude = -self->latitude;
 
-	//self->longitude = NMEA_deg2dec( fields[LONGITUDE], 3 );
+  /* converts longitude field to float */
 	ascii_to_float(fields[LONGITUDE], &(self->longitude) );
 	NMEA_deg2dec(&(self->longitude));
-	if(*(fields[EoW])== 'W')
+	if(*(fields[EoW])== 'W')  // changes the sign if needed
 			self->longitude = -self->longitude;
 
-	self->GPS_fix = (uint8_t) ascii_to_int(fields[FIX]);
+	ascii_to_int(fields[SIV], &(self->satellites_in_view));
 
-	self->satellites_in_view = (uint8_t) ascii_to_int(fields[SIV]);
+	ascii_to_int(fields[ALTTUDE_METER], &(self->altitude));
 
-	self->HDOP = (uint8_t) ascii_to_int(fields[HDOP]);
-
-	self->altitude = (uint8_t) ascii_to_int(fields[ALTTUDE_METER]);
-}
-
-
-
-void GPS_update_GNGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
-{
-	static uint8_t count = 0;
-	GPSdata aux_data;
-
-	fields_to_GPS(&aux_data, fields);
-
-	if(!count)
-	{
-		self->latitude = aux_data.latitude;
-		self->longitude = aux_data.longitude;
-	}
-	else
-	{
-		self->latitude = (self->latitude + aux_data.latitude)/2;
-		self->longitude = (self->longitude + aux_data.longitude)/2;
-		self->altitude = (self->altitude + aux_data.altitude)/2;
-	}
-	self->GPS_fix = aux_data.GPS_fix;
-	self->satellites_in_view = aux_data.satellites_in_view;
-	self->HDOP = aux_data.HDOP;
-
-	count == 10 ? count = 0 : count++;
 }
 
 void NMEA_deg2dec(float* number)
 {
-	//if(!*number) return;
+	if(!*number) return;
 	*number/=100;
 	int integer = (int) *number;//grados
 	*number = (*number - (float)integer)*100;// quedan solo los minutos y sus decimales
@@ -143,7 +104,7 @@ void NMEA_deg2dec(float* number)
 	*number = (float) integer + (*number); //a los grados le agrega los minutos /60 para que sean grados
 }
 
-/*
+#ifdef DYNAMIC
 satellite * CreateSatellite(   uint8_t number, uint8_t elevation,
 		unsigned int azimut, uint8_t SNR )
 {
@@ -196,4 +157,4 @@ void FreeGPS(GPSdata * self)
 	freeSatellites(self);
     free(self);
 }
-*/
+#endif

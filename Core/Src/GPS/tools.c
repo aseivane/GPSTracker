@@ -5,8 +5,12 @@
  *      Author: z0042kvk
  */
 #include "GPS/tools.h"
-#include <string.h>
 
+/**
+  * @brief  Returns 10^n.
+  * @param n 
+  * @retval (int) 10^n
+  */
 int pow_10(uint8_t n)
 {
     if(!n) return 1;
@@ -20,48 +24,89 @@ int pow_10(uint8_t n)
     return power;
 }
 
-int ascii_to_int(uint8_t *str)
+/**
+  * @brief  Converts uint8_t in ASCII code to int
+  * @param ptrStr pointer to string to convert
+  * @param ptrFloat pointer to float converted
+  * @retval -
+  */
+void ascii_to_int(uint8_t *str, int *result)
 {
     uint8_t negative = 0;
-    if(!str) return 0;
+    /* if it's empty returns 0 */
+    if(!str || (*str) == END_OF_STRING)
+    {
+        (*result) = 0;
+        return ;
+    }
+
+    /* checks if it's negative*/
     if(*str == '-')
     {
         str++;
         negative = 1;
     }
 
-    int size = strlen(str);
-    int result = 0;
-    for ( int i = 0 ; i < size; i++)
-        result += (str[size-i-1] - 48)*pow_10(i);
-    if(negative) return -result;
-    return result;
+    /*calculates the length of the string */
+    uint8_t size = myStrlen(str);
+    (*result) = 0;
+
+
+    for ( uint8_t i = 0 ; i < size; i++)
+        (*result) += (str[size-i-1] - ASCII_OFFSET)*pow_10(i);
+
+    if(negative) (*result) = -(*result);
 }
 
-void ascii_to_float(uint8_t* ptrstr, float* num)
+/**
+  * @brief  Return the length of a string.
+  * It has no checking
+  * @param ptrStr pointer to string to convert
+  * @retval strlen(ptrStr)
+  */
+uint8_t myStrlen(const uint8_t *ptrStr)
+{
+    if(!ptrStr) return 0;
+
+    uint8_t size;
+    for (size = 0; ptrStr[size] != END_OF_STRING; size++);
+    return size;
+}
+
+/**
+  * @brief  Converts uint8_t in ASCII code to float
+  * @param ptrStr pointer to string to convert
+  * @param ptrFloat pointer to float converted
+  * @retval -
+  */
+void ascii_to_float(const uint8_t* ptrStr, float* ptrFloat)
 {
     uint8_t coma;
     uint8_t size;
     uint8_t entero;
-    uint8_t* str=ptrstr;
+    const uint8_t* str=ptrStr;
 
-    *num = 0;
+    *ptrFloat = 0;  // cleans the float
 
-    if(str[0] == '-') str++;
+    if ( (*ptrStr) == END_OF_STRING) return;
+    if(str[0] == '-') str++;    // if it's negative, go on, will see it later
 
-    for (size = 0; str[size] != '\0'; size++);
-    size--;
+    /* checks the length to save the string library */
+    size = myStrlen(str);
 
-    for ( coma = 0; str[size-coma] != '.'; coma++)
-        *num += (str[size-coma] - 48)*pow_10(coma);
+    /* makes all the number after the point an integer in ptrFloat*/
+    for ( coma = 1; str[size-coma] != '.'; coma++)
+        *ptrFloat += ( str[size-coma] - ASCII_OFFSET ) * pow_10( coma -1 );
+
+    *ptrFloat = (*ptrFloat)/pow_10(coma-1); //moves all the numbers after the coma
     coma++;
 
-    *num = (*num)/pow_10(coma-1);
-
+    /* makes all the number before the point an integer in ptrFloat*/
     for ( entero = coma ; (size+1) != entero; entero++)
-        *num += (str[size-entero] - 48)*pow_10(entero-coma);
+        *ptrFloat += (str[size-entero] - ASCII_OFFSET)*pow_10(entero-coma);
 
-    if(ptrstr[0]=='-') *num = -*num;
+    /* checks if its negative */
+    if(ptrStr[0]=='-') *ptrFloat = -(*ptrFloat);
 }
 
 

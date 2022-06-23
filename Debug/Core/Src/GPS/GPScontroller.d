@@ -1,6 +1,6 @@
 Core/Src/GPS/GPScontroller.o: ../Core/Src/GPS/GPScontroller.c \
- ../Core/Inc/OLED/Screens.h ../Core/Inc/OLED/u8g2.h \
- ../Core/Inc/OLED/u8x8.h ../Core/Inc/main.h \
+ ../Core/Inc/GPS/GPScontroller.h ../Core/Inc/GPS/GPSmodel.h \
+ ../Core/Inc/GPS/tools.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -30,11 +30,10 @@ Core/Src/GPS/GPScontroller.o: ../Core/Src/GPS/GPScontroller.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Core/Inc/GPS/GPSmodel.h ../Core/Inc/GPS/tools.h \
- ../Core/Inc/GPS/GPScontroller.h ../Core/Inc/GPS/parser.h
-../Core/Inc/OLED/Screens.h:
-../Core/Inc/OLED/u8g2.h:
-../Core/Inc/OLED/u8x8.h:
+ ../Core/Inc/GPS/parser.h
+../Core/Inc/GPS/GPScontroller.h:
+../Core/Inc/GPS/GPSmodel.h:
+../Core/Inc/GPS/tools.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -65,7 +64,4 @@ Core/Src/GPS/GPScontroller.o: ../Core/Src/GPS/GPScontroller.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
-../Core/Inc/GPS/GPSmodel.h:
-../Core/Inc/GPS/tools.h:
-../Core/Inc/GPS/GPScontroller.h:
 ../Core/Inc/GPS/parser.h:
