@@ -25,6 +25,13 @@
 #define SPACE_BETWEEN_BUTTONS_IN_PIXEL 6
 #define SPACE_BETWEEN_TEXT_AND_BUTTONS_IN_PIXEL 3
 
+#define SIGN_CHAR 1
+#define INTEGER_CHARS 3
+#define POINT_CHAR 1
+#define APTERPOINT_CHARS 6
+#define FLOAT_STRING_SIZE ( SIGN_CHAR + INTEGER_CHARS +\
+							POINT_CHAR + APTERPOINT_CHARS +1)
+
 #define BUTTON_OFFSET 2
 
 uint8_t u8x8_byte_stm32hal_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);

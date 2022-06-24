@@ -232,11 +232,11 @@ void draw_screen_time()
 void draw_screen_ubic()
 {
 	extern GPSdata gps;
-	uint8_t f_to_char[10];
+	uint8_t f_to_char[FLOAT_STRING_SIZE];
 	uint8_t y=11;
 	uint8_t x=0;
 
-	memset(f_to_char, '\0',10);
+	memset(f_to_char, '\0',FLOAT_STRING_SIZE);
 
 	u8g2_ClearBuffer(&u8g2);
 	u8g2_SetFontMode(&u8g2, 1);	// Transparent
@@ -244,15 +244,15 @@ void draw_screen_ubic()
 	u8g2_SetFont(&u8g2, u8g2_font_t0_11_tf );
     u8g2_DrawStr(&u8g2, x, y, "Lat: ");
     x+=u8g2_GetStrWidth(&u8g2,"Lat: ");
-    float_to_ascii(gps.latitude , f_to_char, 6) ;
+    float_to_ascii(gps.latitude , f_to_char, APTERPOINT_CHARS) ;
     u8g2_DrawStr(&u8g2, x, y, f_to_char);
 
-    memset(f_to_char, '\0',10);
+    memset(f_to_char, '\0', FLOAT_STRING_SIZE);
     x=0;
     y=2*y;
     u8g2_DrawStr(&u8g2, x, y, "Lon: ");
 	x+=u8g2_GetStrWidth(&u8g2,"Lon: ");
-	float_to_ascii(gps.longitude , f_to_char, 6) ;
+	float_to_ascii(gps.longitude , f_to_char, APTERPOINT_CHARS) ;
     u8g2_DrawStr(&u8g2, x, y, f_to_char);
 }
 
