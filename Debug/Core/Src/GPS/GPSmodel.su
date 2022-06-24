@@ -1,4 +1,0 @@
-../Core/Src/GPS/GPSmodel.c:33:6:initGPSmodel	16	static
-../Core/Src/GPS/GPSmodel.c:48:6:setGPSdata	24	static
-../Core/Src/GPS/GPSmodel.c:68:6:updateGPGGA	16	static
-../Core/Src/GPS/GPSmodel.c:97:6:NMEA_deg2dec	32	static

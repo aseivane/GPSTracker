@@ -42,7 +42,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_NMEA_LEN			650
 #define UART1 &huart1
 #define I2C_ADDRESS 0x3C
 #define LONG_TIME_PRESS 3000
@@ -88,6 +87,11 @@ uint8_t screen_power = 0;
 uint8_t button_pressed=0;
 uint32_t longPress;
 
+uint32_t enter_usart;
+uint32_t exit_usart;
+uint32_t enter_tim;
+uint32_t exit_tim;
+
 //u8x8_t u8x8;                    // u8x8 object
 u8g2_t u8g2;
 GPSdata gps;
@@ -112,6 +116,7 @@ static void MX_TIM3_Init(void);
 /* TIM IT handler*/
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+	enter_tim = HAL_GetTick();
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER TIM\r\n", strlen("ENTER TIM\r\n"),1000);
 #endif
@@ -121,10 +126,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT TIM\r\n", strlen("EXIT TIM\r\n"),1000);
 #endif
+	exit_tim = HAL_GetTick();
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
+	enter_usart = HAL_GetTick();
 	if (huart->Instance == USART1)
 	{
 
@@ -144,6 +151,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);	//Configure DMA
 	  	__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
 	}
+	exit_usart = HAL_GetTick();
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -477,7 +485,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 10000;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 7200;
+  htim3.Init.Period = 1000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)

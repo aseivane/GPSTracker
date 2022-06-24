@@ -1,7 +1,0 @@
-../Core/Src/oled/Screens.c:15:9:u8x8_byte_stm32hal_hw_i2c	48	static
-../Core/Src/oled/Screens.c:58:9:psoc_gpio_and_delay_cb	32	static
-../Core/Src/oled/Screens.c:115:9:draw_button_line	40	static
-../Core/Src/oled/Screens.c:167:6:initScreen	16	static
-../Core/Src/oled/Screens.c:185:6:updateScreen	16	static
-../Core/Src/oled/Screens.c:206:6:draw_screen_time	48	static
-../Core/Src/oled/Screens.c:232:6:draw_screen_ubic	24	static

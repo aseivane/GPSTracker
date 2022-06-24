@@ -61,7 +61,7 @@ void Error_Handler(void);
 #define LED_Pin GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
-#define MAX_NMEA_LEN			650
+#define MAX_NMEA_LEN			1024
 #define UART1 &huart1
 #define BUTTONS "  Sig  \n  Sel  "
 /* USER CODE END Private defines */

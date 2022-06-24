@@ -1,6 +1,0 @@
-../Core/Src/GPS/parser.c:96:6:copyValues	40	static
-../Core/Src/GPS/parser.c:137:7:getMessageFields	120	static
-../Core/Src/GPS/parser.c:176:9:isSentenceComplete	24	static
-../Core/Src/GPS/parser.c:197:9:coma_count	24	static
-../Core/Src/GPS/parser.c:216:10:findStartChar	24	static
-../Core/Src/GPS/parser.c:247:10:getMessageptr	40	static
