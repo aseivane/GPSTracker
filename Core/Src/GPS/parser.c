@@ -134,7 +134,7 @@ void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF]
  *  @param fieldsArray matrix to copy the values
  *  @return -
  */
-void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
+void  getMessageFields(uint8_t* ptrMessage, uint16_t* msgSize,uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
 {
 
 	uint8_t i;
@@ -146,17 +146,18 @@ void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t fields_a
 	for(i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
 		fields[i] = NULL;
 
-	auxPtrMessage = getMessageptr( ptrMessage, ptrTalker, NULL );
+	auxPtrMessage = getMessageptr( ptrMessage, msgSize, ptrTalker, NULL );
 	if (NULL == auxPtrMessage) return; // if the talkers is not found, return
 
-	if ( ! isSentenceComplete( ptrMessage, auxPtrMessage ) ) return;
+	if ( ! isSentenceComplete( ptrMessage, msgSize,auxPtrMessage ) ) return;
 	
 
 	uint8_t field_count = coma_count(auxPtrMessage);
 
 	for(i = 0; i< field_count; i++)
 	{
-		for(auxPtrMessage; !( (*auxPtrMessage) == COMA || (*auxPtrMessage) == END_STAR); auxPtrMessage++);
+		for(auxPtrMessage; !( (*auxPtrMessage) == COMA ||
+				(*auxPtrMessage) == END_STAR); auxPtrMessage++);
 		fields[i] = auxPtrMessage;
 		auxPtrMessage++;
 	}
@@ -173,15 +174,15 @@ void  getMessageFields(uint8_t* ptrMessage, uint8_t* ptrTalker, uint8_t fields_a
  *  @param ptrMessage pointer to the start of the message.
  *  @return True or False.
  */
-uint8_t isSentenceComplete(uint8_t *ptrMessage, uint8_t *ptrStart)
+uint8_t isSentenceComplete(uint8_t *ptrMessage, uint16_t* msgSize,uint8_t *ptrStart)
 {
 	uint8_t* ptrAux;
 	//checkea que la frase este completa
 	for(ptrAux = ptrStart;
-			*ptrAux != '\r' && *ptrAux != END_OF_STRING && (ptrAux-ptrMessage) < DMA_BUFF_SIZE;
+			*ptrAux != '\r' && *ptrAux != END_OF_STRING && (ptrAux-ptrMessage) < msgSize;
 			ptrAux++);
 	//si llego al final, devuelve NULL
-	if((ptrAux-ptrMessage) == DMA_BUFF_SIZE || *ptrAux == END_OF_STRING)
+	if((ptrAux-ptrMessage) == (*msgSize) || *ptrAux == END_OF_STRING)
 		return FALSE;
 	else return TRUE;
 
@@ -213,14 +214,14 @@ uint8_t coma_count(uint8_t* ptrMessage)
  *  @param ptrStartBuff pointer that refers to where is expected tu start looking for.
  *  @return ptrAux. NULL if there is no match.
  */
-uint8_t* findStartChar( uint8_t* ptrMessage, uint8_t *ptrStart )
+uint8_t* findStartChar( uint8_t* ptrMessage, uint16_t* msgSize,uint8_t *ptrStart )
 {
 	uint8_t* ptrAux ;	// aux pointer for moving through the string
 	for( ptrAux = ptrStart ;
-		( '$' != *ptrAux ) && ( DMA_BUFF_SIZE > (ptrAux - ptrMessage) );
+			( '$' != *ptrAux ) && ( (*msgSize) > (ptrAux - ptrMessage) );
 		ptrAux++);	//starts at the begining. Ends if it matches "$" or end of buffer
 	
-	if( DMA_BUFF_SIZE == ( ptrAux - ptrMessage ) )
+	if( (*msgSize) == ( ptrAux - ptrMessage ) )
 		ptrAux= NULL;	// returns NULL if it didn't find a match
 	
 	return ptrAux;
@@ -244,7 +245,7 @@ void printTalker(const char *message)
  *  @param type string to find. NMEA Talker
  *  @return token to start of message. NULL if there is no match.
  */
-uint8_t* getMessageptr(uint8_t *message, const uint8_t *type,  uint8_t *init_ptr)
+uint8_t* getMessageptr(uint8_t *message, uint16_t* msgSize, const uint8_t *type,  uint8_t *init_ptr)
 {
 	uint8_t* tok;
 	const uint8_t * type_offset;
@@ -257,7 +258,7 @@ uint8_t* getMessageptr(uint8_t *message, const uint8_t *type,  uint8_t *init_ptr
 
 	do
 	{
-		if( !(tok = findStartChar(message, tok) ) ) return NULL; //looks for next $ ocurrence
+		if( !(tok = findStartChar(message, msgSize, tok) ) ) return NULL; //looks for next $ ocurrence
 		tok++;	// findStartChar return a pointer to $. moves one more 
 		#ifdef WINDOWS
 		printTalker(tok);
@@ -280,7 +281,7 @@ uint8_t* getMessageptr(uint8_t *message, const uint8_t *type,  uint8_t *init_ptr
 	 * in the message
 	 */ 
 	}while ( END_OF_STRING != (*type_offset) &&
-			DMA_BUFF_SIZE > (tok-message) );
+			(*msgSize) > (tok-message) );
 
 	//checkea que haya cortado por coincidencia y no por fin del buffer
 	if((*type_offset) != END_OF_STRING) return NULL;

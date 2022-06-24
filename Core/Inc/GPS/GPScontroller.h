@@ -32,8 +32,8 @@
 
 	
 void initGPS(GPSdata * _gps);
-void updateGPS(GPSdata* _gps, uint8_t* bufferDMA);
-void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA);
+void updateGPS(GPSdata* _gps, uint8_t* bufferDMA, uint16_t* msgSize);
+void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA, uint16_t* msgSize);
 uint8_t setDate(RTC_HandleTypeDef* hrtc, uint8_t fields[FIELD_BUFF][FIELD_BUFF]);
 uint8_t setTime(RTC_HandleTypeDef* hrtc, uint8_t fields[FIELD_BUFF]);
 void configGPS();

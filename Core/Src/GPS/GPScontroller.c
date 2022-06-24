@@ -35,7 +35,7 @@ void initGPS(GPSdata * _gps)
   * @param bufferDMA pointer to UART DMA buffer
   * @retval -
   */
-void updateGPS(GPSdata* _gps, uint8_t* bufferDMA)
+void updateGPS(GPSdata* _gps, uint8_t* bufferDMA, uint16_t* msgSize)
 {
 	uint8_t copy_buffer[MAX_NMEA_LEN];
 
@@ -45,7 +45,7 @@ void updateGPS(GPSdata* _gps, uint8_t* bufferDMA)
 
 	memcpy(copy_buffer, bufferDMA, MAX_NMEA_LEN);
 
-	getMessageFields( copy_buffer, (uint8_t*) "GPGGA", fields );
+	getMessageFields( copy_buffer, msgSize, (uint8_t*) "GPGGA", fields );
 
 	setGPSdata(_gps, fields, GPGGA);
 
@@ -56,7 +56,7 @@ void updateGPS(GPSdata* _gps, uint8_t* bufferDMA)
   * @param bufferDMA pointer to UART DMA buffer
   * @retval -
   */
-void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA)
+void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA, uint16_t* msgSize)
 {
 	static uint8_t updatedTime = FALSE;
 	static uint8_t updatedDate = FALSE;
@@ -66,12 +66,12 @@ void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA)
 	uint8_t copy_buffer[DMA_BUFF_SIZE];
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
 
-	for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
-	memset(fields[i], END_OF_STRING, FIELD_BUFF);
+	//for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
+	//memset(fields[i], END_OF_STRING, FIELD_BUFF);
 
-	memcpy(copy_buffer, bufferDMA, DMA_BUFF_SIZE);
+	//memcpy(copy_buffer, bufferDMA, DMA_BUFF_SIZE);
 
-	getMessageFields( copy_buffer, (uint8_t*)"GPZDA", fields );
+	getMessageFields( bufferDMA, msgSize, (uint8_t*)"GPZDA", fields );
 
 	if ( '\0' == *(fields[TIME]) ) return;
 

@@ -75,7 +75,8 @@ void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
 	ascii_to_float(fields[LATITUDE], &(self->latitude) );
 
   /* if the latitude is 0, it means the fields are empty, return */
-  if ( 0 == self->latitude) return ;
+  if ( 0 == self->latitude)
+	  return ;
   
   /* converts degrees to decimal */
 	NMEA_deg2dec(&(self->latitude));
