@@ -9,9 +9,7 @@
  * o bloque de memoria
  */
 
-#include "../../Inc/GPS/parser.h"
-#include <stdint.h> 
-#include <stdio.h> 
+#include "GPS/parser.h"
 
 //#define WINDOWS 
 
@@ -134,14 +132,14 @@ void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF]
  *  @param fieldsArray matrix to copy the values
  *  @return -
  */
-void  getMessageFields(uint8_t* ptrMessage, uint16_t* msgSize,uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
+void  getMessageFields(const uint8_t* ptrMessage, uint16_t* msgSize, const uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] )
 {
 
 	uint8_t i;
 	/* define an array of pointer to reference where each value 
 	* is allocated in the message */
 	uint8_t* fields[FIELD_BUFF];
-	uint8_t* auxPtrMessage;
+	const uint8_t* auxPtrMessage;
 
 	for(i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
 		fields[i] = NULL;
@@ -174,9 +172,9 @@ void  getMessageFields(uint8_t* ptrMessage, uint16_t* msgSize,uint8_t* ptrTalker
  *  @param ptrMessage pointer to the start of the message.
  *  @return True or False.
  */
-uint8_t isSentenceComplete(uint8_t *ptrMessage, uint16_t* msgSize,uint8_t *ptrStart)
+uint8_t isSentenceComplete(const uint8_t *ptrMessage, uint16_t* msgSize,const uint8_t *ptrStart)
 {
-	uint8_t* ptrAux;
+	const uint8_t* ptrAux;
 	//checkea que la frase este completa
 	for(ptrAux = ptrStart;
 			*ptrAux != '\r' && *ptrAux != END_OF_STRING && (ptrAux-ptrMessage) < msgSize;
@@ -195,7 +193,7 @@ uint8_t isSentenceComplete(uint8_t *ptrMessage, uint16_t* msgSize,uint8_t *ptrSt
  *  @param string pointer that refers to where is expected tu start looking for.
  *  @return Number of commas.
  */
-uint8_t coma_count(uint8_t* ptrMessage)
+uint8_t coma_count(const uint8_t* ptrMessage)
 {
 	uint8_t count=0U;
 	//aumenta el puntero hasta que encuentra una coma. Cuando la encuetra avanza
@@ -214,11 +212,11 @@ uint8_t coma_count(uint8_t* ptrMessage)
  *  @param ptrStartBuff pointer that refers to where is expected tu start looking for.
  *  @return ptrAux. NULL if there is no match.
  */
-uint8_t* findStartChar( uint8_t* ptrMessage, uint16_t* msgSize,uint8_t *ptrStart )
+uint8_t* findStartChar(const uint8_t* ptrMessage, uint16_t* msgSize, const uint8_t *ptrStart )
 {
-	uint8_t* ptrAux ;	// aux pointer for moving through the string
+	const uint8_t* ptrAux ;	// aux pointer for moving through the string
 	for( ptrAux = ptrStart ;
-			( '$' != *ptrAux ) && ( (*msgSize) > (ptrAux - ptrMessage) );
+			( START_PESOS != *ptrAux ) && ( (*msgSize) > (ptrAux - ptrMessage) );
 		ptrAux++);	//starts at the begining. Ends if it matches "$" or end of buffer
 	
 	if( (*msgSize) == ( ptrAux - ptrMessage ) )
@@ -245,11 +243,11 @@ void printTalker(const char *message)
  *  @param type string to find. NMEA Talker
  *  @return token to start of message. NULL if there is no match.
  */
-uint8_t* getMessageptr(uint8_t *message, uint16_t* msgSize, const uint8_t *type,  uint8_t *init_ptr)
+uint8_t* getMessageptr(const uint8_t *message, uint16_t* msgSize, const uint8_t *type, const uint8_t *init_ptr)
 {
-	uint8_t* tok;
+	const uint8_t* tok;
 	const uint8_t * type_offset;
-	uint8_t* tok_offset;
+	const uint8_t* tok_offset;
 
 	/* assign aux pointers */
 	if ( NULL == init_ptr ) tok = message;

@@ -8,6 +8,13 @@
 #include "GPS/GPSmodel.h"
 #include <string.h>
 
+#define SIGN_CHAR 1
+#define INTEGER_CHARS 3
+#define POINT_CHAR 1
+#define APTERPOINT_CHARS 6
+#define FLOAT_STRING_SIZE ( SIGN_CHAR + INTEGER_CHARS +\
+							POINT_CHAR + APTERPOINT_CHARS +1)
+
 FRESULT open_append (
     FIL* fp,            /* [OUT] File object to create */
     const char* path    /* [IN]  File name to be opened */
@@ -76,8 +83,9 @@ FRESULT log_data()
 	float_to_ascii(gps.latitude , aux+1, 6) ;
 	f_printf(&fil, aux);
 	float_to_ascii(gps.longitude , aux1+1, 6) ;
-	aux1[11] = '\n';
+	//aux1[11] = '\n';
 	f_printf(&fil, aux1);
+	f_printf(&fil, "\n");
 	/* Close the file */
 	f_close(&fil);
 	return FR_OK;

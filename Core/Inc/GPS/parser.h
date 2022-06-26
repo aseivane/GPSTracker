@@ -32,14 +32,18 @@
 #endif
 
 #include <stdint.h> //para tener uin8_t en C
+#include <string.h> ///fucnioes de str y mem 
+#include <stdio.h> 
+
+#ifdef DYNAMIC
 #include <stdlib.h> // para tener malloc
-#include <string.h> ///fucnioes de str y mem
+#endif
 
 void copyValues(uint8_t** fields, uint8_t field_count , uint8_t dest[FIELD_BUFF][FIELD_BUFF]);
-void  getMessageFields(uint8_t* ptrMessage, uint16_t* msgSize,uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] );
-uint8_t coma_count(uint8_t* string);
-uint8_t* findStartChar( uint8_t* ptrMessage, uint16_t* msgSize,uint8_t *ptrStart );
-uint8_t isSentenceComplete(uint8_t *ptrMessage, uint16_t* msgSize,uint8_t *ptrStart);
-uint8_t* getMessageptr(uint8_t *message, uint16_t* msgSize, const uint8_t *type,  uint8_t *init_ptr);
+void  getMessageFields(const uint8_t* ptrMessage, uint16_t* msgSize,const uint8_t* ptrTalker, uint8_t fields_array[FIELD_BUFF][FIELD_BUFF] );
+uint8_t coma_count(const uint8_t* string);
+uint8_t* findStartChar( const uint8_t* ptrMessage, uint16_t* msgSize, const uint8_t *ptrStart );
+uint8_t isSentenceComplete(const uint8_t *ptrMessage, uint16_t* msgSize, const uint8_t *ptrStart);
+uint8_t* getMessageptr(const uint8_t *message, uint16_t* msgSize, const uint8_t *type, const uint8_t *init_ptr);
 
 #endif /* PARSER_H_ */

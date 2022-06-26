@@ -23,7 +23,7 @@ void initGPS(GPSdata * _gps)
 {
 	initGPSmodel(_gps);
 
-	//configGPS();	// Sends directives for selected NMEA talkers
+	configGPS();	// Sends directives for selected NMEA talkers
 }
 
 
@@ -35,7 +35,7 @@ void initGPS(GPSdata * _gps)
   * @param bufferDMA pointer to UART DMA buffer
   * @retval -
   */
-void updateGPS(GPSdata* _gps, uint8_t* bufferDMA, uint16_t* msgSize)
+void updateGPS(GPSdata* _gps, const uint8_t bufferDMA[], uint16_t* msgSize)
 {
 	uint8_t copy_buffer[MAX_NMEA_LEN];
 
@@ -49,6 +49,12 @@ void updateGPS(GPSdata* _gps, uint8_t* bufferDMA, uint16_t* msgSize)
 
 	setGPSdata(_gps, fields, GPGGA);
 
+#ifdef DEBUG2
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT updateGPS***\r\n\r\n",
+						strlen("***EXIT updateGPS***\r\n\r\n"),1000);
+	HAL_UART_Transmit(&huart3, copy_buffer, *msgSize,1000);
+#endif
+
 }
 /**
   * @brief  Update RTC date and time.
@@ -56,7 +62,7 @@ void updateGPS(GPSdata* _gps, uint8_t* bufferDMA, uint16_t* msgSize)
   * @param bufferDMA pointer to UART DMA buffer
   * @retval -
   */
-void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA, uint16_t* msgSize)
+void updateDateTime( RTC_HandleTypeDef* hrtc, const uint8_t bufferDMA[], uint16_t* msgSize)
 {
 	static uint8_t updatedTime = FALSE;
 	static uint8_t updatedDate = FALSE;
@@ -82,6 +88,12 @@ void updateDateTime( RTC_HandleTypeDef* hrtc, uint8_t* bufferDMA, uint16_t* msgS
 
 	if ( !updatedDate )
 	updatedDate = setDate( hrtc, fields );
+
+#ifdef DEBUG2
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT updateDateTime***\r\n\r\n",
+						strlen("***EXIT updateDateTime***\r\n\r\n"),1000);
+	HAL_UART_Transmit(&huart3, bufferDMA, *msgSize,1000);
+#endif
 }
 
 uint8_t setDate(RTC_HandleTypeDef* hrtc, uint8_t fields[FIELD_BUFF][FIELD_BUFF])
@@ -127,7 +139,7 @@ uint8_t setTime(RTC_HandleTypeDef* hrtc, uint8_t fields[FIELD_BUFF])
   */
 void configGPS()
 {
-	uint8_t const enable_ZDA [ZDA_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x08, 0x01, 0x03, 0x20};
+	const uint8_t enable_ZDA [ZDA_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x08, 0x01, 0x03, 0x20};
 	const uint8_t enable_GGA [GGA_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x01, 0xFB, 0x10};
 	const uint8_t enable_GBS [GBS_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x09, 0x01, 0x04, 0x22};
 	const uint8_t disable_RMC[RMC_PAYLOAD] = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17};
@@ -139,7 +151,7 @@ void configGPS()
 	HAL_UART_Transmit(&huart1, enable_GBS, GBS_PAYLOAD,1000);
 	HAL_UART_Transmit(&huart1, disable_RMC, RMC_PAYLOAD,1000);
 	HAL_UART_Transmit(&huart1, disable_GLL, GLL_PAYLOAD,1000);
-	HAL_UART_Transmit(&huart1, power_save, RXM_PAYLOAD,1000);
+	//HAL_UART_Transmit(&huart1, power_save, RXM_PAYLOAD,1000);
 }
 
 void GPS_1min_sleep()

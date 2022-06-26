@@ -48,7 +48,7 @@
 
 #define SIG_BUTTON 1U
 #define SEL_BUTTON 2U
-#undef DEBUG
+#define DEBUG
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -81,16 +81,14 @@ DMA_HandleTypeDef hdma_usart1_rx;
 
 
 uint8_t usart_rx_dma_buffer[MAX_NMEA_LEN];
+const uint8_t DMAcopy[MAX_NMEA_LEN];
 uint8_t screen_number;
 uint8_t GPSupdated = 0;
 uint8_t screen_power = 0;
 uint8_t button_pressed=0;
 uint32_t longPress;
 
-uint32_t enter_usart;
-uint32_t exit_usart;
-uint32_t enter_tim;
-uint32_t exit_tim;
+uint32_t timer_val;
 
 //u8x8_t u8x8;                    // u8x8 object
 u8g2_t u8g2;
@@ -116,48 +114,49 @@ static void MX_TIM3_Init(void);
 /* TIM IT handler*/
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	enter_tim = HAL_GetTick();
 #ifdef DEBUG
-	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER TIM\r\n", strlen("ENTER TIM\r\n"),1000);
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***ENTER TIM***\r\n",
+						strlen("***ENTER TIM***\r\n"),1000);
 #endif
-
 	updateScreen();	// Screen update
 
 #ifdef DEBUG
-	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT TIM\r\n", strlen("EXIT TIM\r\n"),1000);
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT TIM***\r\n\r\n",
+						strlen("***EXIT TIM***\r\n\r\n"),1000);
 #endif
-	exit_tim = HAL_GetTick();
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-	enter_usart = HAL_GetTick();
+	timer_val = __HAL_TIM_GET_COUNTER(&htim3);
 	if (huart->Instance == USART1)
 	{
 
 #ifdef DEBUG
-	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER IT_RXIDLE\r\n", strlen("ENTER IT_RXIDLE\r\n"),1000);
-	HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, strlen(usart_rx_dma_buffer),1000);
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***ENTER IT_RXIDLE***\r\n",
+						strlen("***ENTER IT_RXIDLE***\r\n"),1000);
+	//HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, Size,1000);
 #endif
-
 		updateGPS(&gps, usart_rx_dma_buffer, &Size);
 		GPSupdated = 1;
 		updateDateTime( &hrtc, usart_rx_dma_buffer, &Size);
 
 #ifdef DEBUG
-	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT IT_RXIDLE\r\n", strlen("EXIT IT_RXIDLE\r\n"),1000);
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT IT_RXIDLE***\r\n\r\n",
+						strlen("***EXIT IT_RXIDLE***\r\n\r\n"),1000);
 #endif
 
 		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart_rx_dma_buffer, MAX_NMEA_LEN);	//Configure DMA
 	  	__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
 	}
-	exit_usart = HAL_GetTick();
+
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 #ifdef DEBUG
-	HAL_UART_Transmit(&huart3, (uint8_t *)"ENTER EXTI\r\n", strlen("ENTER EXTI\r\n"),1000);
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***ENTER EXTI***\r\n",
+						strlen("***ENTER EXTI***\r\n"),1000);
 #endif
 	longPress = HAL_GetTick();
 	switch(GPIO_Pin)
@@ -171,7 +170,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			break;
 	}
 #ifdef DEBUG
-	HAL_UART_Transmit(&huart3, (uint8_t *)"EXIT EXTI\r\n", strlen("EXIT EXTI\r\n"),1000);
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT EXTI***\r\n\r\n",
+						strlen("***EXIT EXTI***\r\n\r\n"),1000);
 #endif
 }
 
@@ -269,12 +269,14 @@ int main(void)
 	  /* Is there new position info?*/
 	  if( GPSupdated )
 	  {
-		  __HAL_UART_DISABLE_IT(UART1, UART_IT_IDLE);	//disables IT util data is updated
-		  //log_data();	// Saves data in SD
+
+		  HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+		  log_data();	// Saves data in SD
 		  GPSupdated = 0;
-		  __HAL_UART_ENABLE_IT(UART1, UART_IT_IDLE);	// Enables IT again
+		  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 	  }
 	  check_buttons();
+	  //HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
     /* USER CODE END WHILE */
 
@@ -485,7 +487,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 10000;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1000;
+  htim3.Init.Period = 900;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -615,17 +617,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA1 PA2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2;
+  /*Configure GPIO pin : SIG_Pin */
+  GPIO_InitStruct.Pin = SIG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SIG_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SEL_Pin */
+  GPIO_InitStruct.Pin = SEL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(SEL_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 2, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
 }
