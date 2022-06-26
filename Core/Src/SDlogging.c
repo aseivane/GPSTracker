@@ -40,7 +40,7 @@ void send_uart (char *string)
 	HAL_UART_Transmit(&huart1, (uint8_t *) string, len, HAL_MAX_DELAY);  // transmit in blocking mode
 }
 
-FRESULT log_data()
+FRESULT log_data( GPSdata *_gps, RTC_HandleTypeDef * _hrtc )
 {
   FRESULT fr;
   FATFS fs;
@@ -51,8 +51,6 @@ FRESULT log_data()
   uint8_t aux1[13] = ",          \n";
   RTC_TimeTypeDef Time;
   RTC_DateTypeDef Date;
-  extern RTC_HandleTypeDef hrtc;
-  extern GPSdata gps;
 
 	/* Open or create a log file and ready to append */
   fr = f_mount(&fs, "", 0);
@@ -72,17 +70,17 @@ FRESULT log_data()
 
 	//send_uart ("logfile.txt opened\r\n");
 
-	HAL_RTC_GetTime(&hrtc, &Time, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &Date, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(_hrtc, &Time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(_hrtc, &Date, RTC_FORMAT_BIN);
 
 	get_time_string(&Time, time_string);
 	get_date_string(&Date, date_string);
 	/* Append a line */
 	f_printf(&fil, time_string);
 	f_printf(&fil, date_string);
-	float_to_ascii(gps.latitude , aux+1, 6) ;
+	float_to_ascii(_gps->latitude , aux+1, 6) ;
 	f_printf(&fil, aux);
-	float_to_ascii(gps.longitude , aux1+1, 6) ;
+	float_to_ascii(_gps->longitude , aux1+1, 6) ;
 	//aux1[11] = '\n';
 	f_printf(&fil, aux1);
 	f_printf(&fil, "\n");

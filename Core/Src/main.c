@@ -80,15 +80,15 @@ DMA_HandleTypeDef hdma_usart1_rx;
 }Status;*/
 
 
-uint8_t usart_rx_dma_buffer[MAX_NMEA_LEN];
-const uint8_t DMAcopy[MAX_NMEA_LEN];
+volatile uint8_t usart_rx_dma_buffer[MAX_NMEA_LEN];
+volatile uint32_t timePress;
+
+uint8_t recording = 0;
 uint8_t screen_number;
 uint8_t GPSupdated = 0;
 uint8_t screen_power = 0;
 uint8_t button_pressed=0;
-uint32_t longPress;
 
-uint32_t timer_val;
 
 //u8x8_t u8x8;                    // u8x8 object
 u8g2_t u8g2;
@@ -128,7 +128,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-	timer_val = __HAL_TIM_GET_COUNTER(&htim3);
 	if (huart->Instance == USART1)
 	{
 
@@ -158,14 +157,27 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	HAL_UART_Transmit(&huart3, (uint8_t *)"***ENTER EXTI***\r\n",
 						strlen("***ENTER EXTI***\r\n"),1000);
 #endif
-	longPress = HAL_GetTick();
+
+	/* waits until chack_buttons functions clears the event */
+	if ( button_pressed ) return;
+
+	/* if the button is pressed, stores ti ticks at that time */
+	if (HAL_GPIO_ReadPin(GPIOA,GPIO_Pin) == GPIO_PIN_RESET )
+	{
+		timePress = HAL_GetTick();
+		return;
+	}
+
+	/* when the button is release, meassures de time difference */
+	timePress = HAL_GetTick() - timePress;
+
 	switch(GPIO_Pin)
 	{
-		case GPIO_PIN_1:
+		case SIG_Pin:
 			button_pressed = SIG_BUTTON;
 			break;
 
-		case GPIO_PIN_2:
+		case SEL_Pin:
 			button_pressed = SEL_BUTTON;
 			break;
 	}
@@ -180,8 +192,7 @@ void check_buttons()
 	switch(button_pressed)
 	{
 		case SIG_BUTTON:
-			while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_1) == GPIO_PIN_RESET );
-			if( ( HAL_GetTick() - longPress < LONG_TIME_PRESS) )
+			if( timePress < LONG_TIME_PRESS )
 				screen_number == 1 ? screen_number = 0 : screen_number++;
 			else
 			{
@@ -191,7 +202,7 @@ void check_buttons()
 			break;
 
 		case SEL_BUTTON:
-			button_pressed = SEL_BUTTON;
+			recording ^= 1 << 1;
 			break;
 	}
 	button_pressed = 0;
@@ -265,19 +276,21 @@ int main(void)
 
   while (1)
   {
-
-	  /* Is there new position info?*/
-	  if( GPSupdated )
+	  if ( recording )
 	  {
+		  /* Is there new position info?*/
+		  if( GPSupdated )
+		  {
 
-		  HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
-		  log_data();	// Saves data in SD
-		  GPSupdated = 0;
-		  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+			  HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+			  log_data();	// Saves data in SD
+			  GPSupdated = 0;
+			  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+		  }
+		  //HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 	  }
-	  check_buttons();
-	  //HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
+	  check_buttons();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -487,7 +500,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 10000;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 900;
+  htim3.Init.Period = 1000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -619,21 +632,21 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : SIG_Pin */
   GPIO_InitStruct.Pin = SIG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SIG_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SEL_Pin */
   GPIO_InitStruct.Pin = SEL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(SEL_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
 }
