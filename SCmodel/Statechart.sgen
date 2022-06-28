@@ -1,0 +1,20 @@
+GeneratorModel for yakindu::c {
+
+	const PROJECT : string = "GPSTracker"
+
+	const FOLDER : string = "Core/Src"
+	
+	const LIBRARY : string = "Core/Inc"
+	
+	const API : string = "Core/Inc"
+
+	statechart Statechart {
+
+		feature Outlet {
+			targetProject = PROJECT
+			targetFolder = FOLDER
+			libraryTargetFolder = LIBRARY
+			apiTargetFolder = API
+		}
+	}
+}

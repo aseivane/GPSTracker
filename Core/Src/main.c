@@ -93,6 +93,7 @@ uint8_t button_pressed=0;
 //u8x8_t u8x8;                    // u8x8 object
 u8g2_t u8g2;
 GPSdata gps;
+Statechart statechart;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -159,7 +160,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 #endif
 
 	/* waits until chack_buttons functions clears the event */
-	if ( button_pressed ) return;
+	if ( button_pressed && !recording) return;
 
 	/* if the button is pressed, stores ti ticks at that time */
 	if (HAL_GPIO_ReadPin(GPIOA,GPIO_Pin) == GPIO_PIN_RESET )
@@ -179,6 +180,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 		case SEL_Pin:
 			button_pressed = SEL_BUTTON;
+			HAL_PWR_DisableSleepOnExit ();
 			break;
 	}
 #ifdef DEBUG
@@ -202,7 +204,14 @@ void check_buttons()
 			break;
 
 		case SEL_BUTTON:
-			recording ^= 1 << 1;
+			if(recording)
+			{
+				statechart_raise_stopRecord(&statechart);
+			}
+			else
+			{
+				statechart_raise_startRecord(&statechart);
+			}
 			break;
 	}
 	button_pressed = 0;
@@ -217,6 +226,43 @@ void Setup()
 	initScreen(&u8g2); // Screen init, clear, home screen set
 
 	initGPS(&gps);	// Initialize default values for gps object
+
+	statechart_init(&statechart);
+	statechart_enter(&statechart);
+}
+
+void statechart_recording( Statechart* handle)
+{
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***recording***\r\n",
+						strlen("***recording***\r\n"),1000);
+#endif
+	button_pressed = 0;
+	recording = 1;
+	/* when it's recording only wakes up for
+	 * saving data
+	 */
+	screen_power = 1;
+	u8g2_SetPowerSave(&u8g2, screen_power);
+	HAL_TIM_Base_Stop_IT(&htim3);
+	HAL_PWR_EnableSleepOnExit ();
+	HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+}
+
+void statechart_notrecording( Statechart* handle)
+{
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart3, (uint8_t *)"***notrecording***\r\n",
+						strlen("***notrecording***\r\n"),1000);
+#endif
+	button_pressed = 0;
+	recording = 0;
+	/* when it's recording only wakes up for
+	 * saving data
+	 */
+	screen_power = 0;
+	u8g2_SetPowerSave(&u8g2, screen_power);
+	HAL_TIM_Base_Start_IT(&htim3);
 }
 
 /* USER CODE END 0 */
@@ -282,10 +328,10 @@ int main(void)
 		  if( GPSupdated )
 		  {
 
-			  HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+			  //HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
 			  log_data();	// Saves data in SD
 			  GPSupdated = 0;
-			  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+			 // HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 		  }
 		  //HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 	  }
@@ -630,17 +676,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SIG_Pin */
-  GPIO_InitStruct.Pin = SIG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SIG_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : SEL_Pin */
-  GPIO_InitStruct.Pin = SEL_Pin;
+  /*Configure GPIO pins : SIG_Pin SEL_Pin */
+  GPIO_InitStruct.Pin = SIG_Pin|SEL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(SEL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 2, 0);
