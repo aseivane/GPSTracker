@@ -48,7 +48,7 @@
 
 #define SIG_BUTTON 1U
 #define SEL_BUTTON 2U
-#undef DEBUG
+//#undef DEBUG
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -81,11 +81,12 @@ DMA_HandleTypeDef hdma_usart1_rx;
 
 
 volatile uint8_t usart_rx_dma_buffer[MAX_NMEA_LEN];
+uint8_t copy_buffer[MAX_NMEA_LEN];
 volatile uint32_t timePress;
 
 uint8_t recording = 0;
 uint8_t new_data = 0;
-uint8_t new_data_size = 0;
+uint16_t new_data_size = 0;
 uint8_t screen_number;
 uint8_t GPSupdated = 0;
 uint8_t screen_power = 0;
@@ -173,7 +174,8 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	//HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, Size,1000);
 #endif
 	new_data = 1;
-	new_data_size = (uint8_t) (Size);
+	new_data_size = Size;
+	memcpy(copy_buffer, usart_rx_dma_buffer, new_data_size);
 
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT IT_RXIDLE***\r\n\r\n",
@@ -274,7 +276,7 @@ void Setup()
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t copy_buffer[MAX_NMEA_LEN];
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -332,12 +334,20 @@ int main(void)
 #endif
 
 		  /* copies DMA buffer in to local buffer */
-		  memcpy(copy_buffer, usart_rx_dma_buffer, new_data_size);
+
 		  copy_buffer[new_data_size] = '\0'; // adds an EOS
 
 		  /* updates data */
+#ifdef DEBUG
+		  HAL_UART_Transmit(&huart3, (uint8_t *)"***updateGPS***\r\n\r\n",
+							strlen("***updateGPS***\r\n\r\n"),1000);
+#endif
 		  updateGPS(&gps, copy_buffer, &new_data_size);
 		  GPSupdated = 1;
+#ifdef DEBUG
+		  HAL_UART_Transmit(&huart3, (uint8_t *)"***updateDateTime***\r\n\r\n",
+							strlen("***updateDateTime***\r\n\r\n"),1000);
+#endif
 		  updateDateTime( &hrtc, copy_buffer, &new_data_size);
 	  }
 

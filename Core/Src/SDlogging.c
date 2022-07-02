@@ -38,20 +38,30 @@ void send_uart (char *string)
 FRESULT log_data( GPSdata *_gps, RTC_HandleTypeDef * _hrtc )
 {
   FRESULT fr;
-  FATFS fs;
-  FIL fil;
+  static FATFS fs = {0};
+  static FIL fil = {0};
   uint8_t time_string[TIME_STRING_SIZE] = "  :  :  ,";
   uint8_t date_string[DATE_STRING_SIZE] = "  /  /  ,";
   uint8_t aux[FLOAT_STRING_SIZE] = "";
   RTC_TimeTypeDef Time = {0};
   RTC_DateTypeDef Date = {0};
 
-	/* Open or create a log file and ready to append */
-  fr = f_mount(&fs, "", 0);
-  if ( fr != FR_OK )
+  /* if _gps is NULL. stops recording */
+  if (!_gps)
   {
-		//send_uart ("ERROR!!! in mounting SD CARD...\r\n");
-		return fr;
+    /* Close the file */
+
+    f_mount(&fs, NULL, 0);
+  }
+	/* Open or create a log file and ready to append */
+  if (!fs.id)
+  {
+    fr = f_mount(&fs, "", 1);
+    if ( fr != FR_OK )
+    {
+      //send_uart ("ERROR!!! in mounting SD CARD...\r\n");
+      return fr;
+    }
   }
   //else send_uart("SD CARD mounted successfully...\r\n");
 
@@ -83,7 +93,6 @@ FRESULT log_data( GPSdata *_gps, RTC_HandleTypeDef * _hrtc )
 	f_puts(aux, &fil);
 	//send_uart (aux);
 	f_puts("\n", &fil);
-	/* Close the file */
 	f_close(&fil);
 	return FR_OK;
 }
