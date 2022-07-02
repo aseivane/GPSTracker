@@ -1,0 +1,5 @@
+good practices for IRQ enable and disable
+https://stackoverflow.com/questions/71626597/what-are-the-various-ways-to-disable-and-re-enable-interrupts-in-stm32-microcont
+
+low power modes
+https://www.fatalerrors.org/a/stm32-cubeide-low-power-mode-standby-mode-rtc-wakeup.html

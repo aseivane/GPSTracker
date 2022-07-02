@@ -4,16 +4,9 @@
  *  Created on: Jan 7, 2021
  *      Author: z0042kvk
  */
-#include "fatfs.h"
-#include "GPS/GPSmodel.h"
-#include <string.h>
+#include "SDlogging.h"
 
-#define SIGN_CHAR 1
-#define INTEGER_CHARS 3
-#define POINT_CHAR 1
-#define APTERPOINT_CHARS 6
-#define FLOAT_STRING_SIZE ( SIGN_CHAR + INTEGER_CHARS +\
-							POINT_CHAR + APTERPOINT_CHARS +1)
+
 
 FRESULT open_append (
     FIL* fp,            /* [OUT] File object to create */
@@ -33,24 +26,25 @@ FRESULT open_append (
     return fr;
 }
 
+#ifdef DEBUG
 void send_uart (char *string)
 {
-	extern UART_HandleTypeDef huart1;
+	extern UART_HandleTypeDef huart3;
 	uint8_t len = strlen (string);
-	HAL_UART_Transmit(&huart1, (uint8_t *) string, len, HAL_MAX_DELAY);  // transmit in blocking mode
+	HAL_UART_Transmit(&huart3, (uint8_t *) string, len, HAL_MAX_DELAY);  // transmit in blocking mode
 }
+#endif
 
 FRESULT log_data( GPSdata *_gps, RTC_HandleTypeDef * _hrtc )
 {
   FRESULT fr;
   FATFS fs;
   FIL fil;
-  uint8_t time_string[11] = "  :  :   ,";
-  uint8_t date_string[10] = "  /  /  ";
-  uint8_t aux[10] = ",        ";
-  uint8_t aux1[13] = ",          \n";
-  RTC_TimeTypeDef Time;
-  RTC_DateTypeDef Date;
+  uint8_t time_string[TIME_STRING_SIZE] = "  :  :  ,";
+  uint8_t date_string[DATE_STRING_SIZE] = "  /  /  ,";
+  uint8_t aux[FLOAT_STRING_SIZE] = "";
+  RTC_TimeTypeDef Time = {0};
+  RTC_DateTypeDef Date = {0};
 
 	/* Open or create a log file and ready to append */
   fr = f_mount(&fs, "", 0);
@@ -75,15 +69,20 @@ FRESULT log_data( GPSdata *_gps, RTC_HandleTypeDef * _hrtc )
 
 	get_time_string(&Time, time_string);
 	get_date_string(&Date, date_string);
+
 	/* Append a line */
-	f_printf(&fil, time_string);
-	f_printf(&fil, date_string);
-	float_to_ascii(_gps->latitude , aux+1, 6) ;
-	f_printf(&fil, aux);
-	float_to_ascii(_gps->longitude , aux1+1, 6) ;
-	//aux1[11] = '\n';
-	f_printf(&fil, aux1);
-	f_printf(&fil, "\n");
+	f_puts(date_string, &fil);
+	f_puts(time_string, &fil);
+
+	float_to_ascii(_gps->latitude , aux, 6) ;
+	f_puts(aux, &fil);
+	f_puts(",",&fil);
+	//send_uart (aux);
+
+	float_to_ascii(_gps->longitude , aux, 6) ;
+	f_puts(aux, &fil);
+	//send_uart (aux);
+	f_puts("\n", &fil);
 	/* Close the file */
 	f_close(&fil);
 	return FR_OK;

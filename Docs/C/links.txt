@@ -1,0 +1,9 @@
+Sate machin in C
+https://yakking.branchable.com/posts/state-machines-in-c/
+https://barrgroup.com/embedded-systems/how-to/coding-state-machines
+
+CRC
+https://barrgroup.com/embedded-systems/how-to/crc-calculation-c-code
+
+assert
+https://barrgroup.com/embedded-systems/how-to/use-assert-macro

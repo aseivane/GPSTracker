@@ -27,8 +27,8 @@
 #include "GPS/GPScontroller.h"
 #include "oled/Screens.h"
 
-#include "fatfs_sd.h"
-#include "SDlogging.h"
+//#include "fatfs_sd.h"
+//#include "SDlogging.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 
 #define SIG_BUTTON 1U
 #define SEL_BUTTON 2U
-#define DEBUG
+#undef DEBUG
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -84,10 +84,13 @@ volatile uint8_t usart_rx_dma_buffer[MAX_NMEA_LEN];
 volatile uint32_t timePress;
 
 uint8_t recording = 0;
+uint8_t new_data = 0;
+uint8_t new_data_size = 0;
 uint8_t screen_number;
 uint8_t GPSupdated = 0;
 uint8_t screen_power = 0;
 uint8_t button_pressed=0;
+uint8_t refresh_screen =1;
 
 
 //u8x8_t u8x8;                    // u8x8 object
@@ -125,8 +128,8 @@ void start_recording( )
 	screen_power = 1;
 	u8g2_SetPowerSave(&u8g2, screen_power);
 	HAL_TIM_Base_Stop_IT(&htim3);
-	HAL_PWR_EnableSleepOnExit ();
-	HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	//HAL_PWR_EnableSleepOnExit ();
+	//HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 }
 
 void stop_recording( )
@@ -151,8 +154,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	HAL_UART_Transmit(&huart3, (uint8_t *)"***ENTER TIM***\r\n",
 						strlen("***ENTER TIM***\r\n"),1000);
 #endif
-	updateScreen();	// Screen update
 
+	refresh_screen = 1;
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT TIM***\r\n\r\n",
 						strlen("***EXIT TIM***\r\n\r\n"),1000);
@@ -169,9 +172,8 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 						strlen("***ENTER IT_RXIDLE***\r\n"),1000);
 	//HAL_UART_Transmit(&huart3, usart_rx_dma_buffer, Size,1000);
 #endif
-		updateGPS(&gps, usart_rx_dma_buffer, &Size);
-		GPSupdated = 1;
-		updateDateTime( &hrtc, usart_rx_dma_buffer, &Size);
+	new_data = 1;
+	new_data_size = (uint8_t) (Size);
 
 #ifdef DEBUG
 	HAL_UART_Transmit(&huart3, (uint8_t *)"***EXIT IT_RXIDLE***\r\n\r\n",
@@ -272,6 +274,7 @@ void Setup()
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	uint8_t copy_buffer[MAX_NMEA_LEN];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -320,19 +323,55 @@ int main(void)
 
   while (1)
   {
+	  if (new_data)
+	  {
+		  new_data = 0;
+#ifdef DEBUG
+		  HAL_UART_Transmit(&huart3, (uint8_t *)"***new_data***\r\n\r\n",
+							strlen("***new_data***\r\n\r\n"),1000);
+#endif
+
+		  /* copies DMA buffer in to local buffer */
+		  memcpy(copy_buffer, usart_rx_dma_buffer, new_data_size);
+		  copy_buffer[new_data_size] = '\0'; // adds an EOS
+
+		  /* updates data */
+		  updateGPS(&gps, copy_buffer, &new_data_size);
+		  GPSupdated = 1;
+		  updateDateTime( &hrtc, copy_buffer, &new_data_size);
+	  }
+
 	  if ( recording )
 	  {
 		  /* Is there new position info?*/
 		  if( GPSupdated )
 		  {
-
-			  //HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
-			  log_data();	// Saves data in SD
+#ifdef DEBUG
+			  HAL_UART_Transmit(&huart3, (uint8_t *)"***log_data***\r\n\r\n",
+			  							strlen("***log_data***\r\n\r\n"),1000);
+#endif
+			  HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+			  log_data(&gps, &hrtc);	// Saves data in SD
 			  GPSupdated = 0;
-			 // HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+			  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+			  //HAL_UART_Transmit(&huart3, (uint8_t *)"***__enable_irq***\r\n\r\n",
+			  //			  							strlen("***__enable_irq***\r\n\r\n"),1000);
 		  }
 		  //HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 	  }
+
+	  if (refresh_screen && !screen_power)
+	  {
+		  refresh_screen =0;
+		  __disable_irq();
+#ifdef DEBUG
+		  HAL_UART_Transmit(&huart3, (uint8_t *)"***refresh_screen***\r\n\r\n",
+								strlen("***refresh_screen***\r\n\r\n"),1000);
+#endif
+		  updateScreen();	// Screen update
+		  __enable_irq();
+	  }
+
 
 	  check_buttons();
     /* USER CODE END WHILE */
@@ -677,7 +716,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : SIG_Pin SEL_Pin */
   GPIO_InitStruct.Pin = SIG_Pin|SEL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/

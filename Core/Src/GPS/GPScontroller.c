@@ -35,17 +35,15 @@ void initGPS(GPSdata * _gps)
   * @param bufferDMA pointer to UART DMA buffer
   * @retval -
   */
-void updateGPS(GPSdata* _gps, const uint8_t bufferDMA[], uint16_t* msgSize)
+void updateGPS(GPSdata* _gps, const uint8_t bufferDMA[MAX_NMEA_LEN], uint16_t* msgSize)
 {
-	uint8_t copy_buffer[MAX_NMEA_LEN];
 
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
 	for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
 		memset(fields[i], END_OF_STRING, FIELD_BUFF);
 
-	memcpy(copy_buffer, bufferDMA, MAX_NMEA_LEN);
 
-	getMessageFields( copy_buffer, msgSize, (uint8_t*) "GPGGA", fields );
+	getMessageFields( bufferDMA, msgSize, (uint8_t*) "GPGGA", fields );
 
 	setGPSdata(_gps, fields, GPGGA);
 
@@ -69,7 +67,6 @@ void updateDateTime( RTC_HandleTypeDef* hrtc, const uint8_t bufferDMA[], uint16_
 
 	if ( TRUE == updatedTime && TRUE == updatedDate ) return;
 
-	uint8_t copy_buffer[DMA_BUFF_SIZE];
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
 
 	//for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
@@ -154,8 +151,8 @@ void configGPS()
 	//HAL_UART_Transmit(&huart1, power_save, RXM_PAYLOAD,1000);
 }
 
-void GPS_1min_sleep()
+void GPS_1min_sleep(UART_HandleTypeDef *huart1)
 {
 	uint8_t UBLOX_GPSStandby[] = {0xB5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x60, 0xEA, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x97, 0xA1};
-	HAL_UART_Transmit(&huart1, UBLOX_GPSStandby, 16,1000);
+	HAL_UART_Transmit(huart1, UBLOX_GPSStandby, 16,1000);
 }
