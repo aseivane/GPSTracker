@@ -41,9 +41,9 @@ void updateGPS(GPSdata* _gps, const uint8_t bufferDMA[MAX_NMEA_LEN], uint16_t* m
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];
 	for(uint8_t i = 0; i<FIELD_BUFF; i++) // initializes all the pinters
 		memset(fields[i], END_OF_STRING, FIELD_BUFF);
-
+#ifdef DEBUG
 	HAL_UART_Transmit(&huart3, bufferDMA, *msgSize,1000);
-
+#endif
 	getMessageFields( bufferDMA, msgSize, (uint8_t*) "GPGGA", fields );
 
 	setGPSdata(_gps, fields, GPGGA);
@@ -65,9 +65,9 @@ void updateDateTime( RTC_HandleTypeDef* hrtc, const uint8_t bufferDMA[], uint16_
 {
 	static uint8_t updatedTime = FALSE;
 	static uint8_t updatedDate = FALSE;
-
+#ifdef DEBUG2
 	HAL_UART_Transmit(&huart3, bufferDMA, *msgSize,1000);
-
+#endif
 	if ( TRUE == updatedTime && TRUE == updatedDate ) return;
 
 	uint8_t fields[FIELD_BUFF][FIELD_BUFF];

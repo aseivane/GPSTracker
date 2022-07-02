@@ -282,7 +282,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -364,6 +365,7 @@ int main(void)
 			  log_data(&gps, &hrtc);	// Saves data in SD
 			  GPSupdated = 0;
 			  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
 			  //HAL_UART_Transmit(&huart3, (uint8_t *)"***__enable_irq***\r\n\r\n",
 			  //			  							strlen("***__enable_irq***\r\n\r\n"),1000);
 		  }
@@ -384,6 +386,7 @@ int main(void)
 
 
 	  check_buttons();
+	  HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

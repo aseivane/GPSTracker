@@ -71,13 +71,17 @@ void updateGPGGA(GPSdata * self, uint8_t fields[][FIELD_BUFF])
   TIME, LATITUDE, NoS, LONGITUDE, EoW,
   FIX, SIV, HDOP, ALTTUDE_GEOID, ALTTUDE_METER,
   GEO_SEP, GEO_SEP_METER, DIFF, DIFF_REF};
+
+  float aux = 0;
   /* converts latitude field to float */
-	ascii_to_float(fields[LATITUDE], &(self->latitude) );
+	ascii_to_float(fields[LATITUDE], &(aux) );
 
   /* if the latitude is 0, it means the fields are empty, return */
-  if ( 0 == self->latitude)
+  if ( 0 == aux)
 	  return ;
-  
+
+  self->latitude = aux;
+
   /* converts degrees to decimal */
 	NMEA_deg2dec(&(self->latitude));
 	if(*(fields[NoS]) == 'S') // changes the sign if needed
