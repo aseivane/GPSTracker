@@ -361,10 +361,10 @@ int main(void)
 			  HAL_UART_Transmit(&huart3, (uint8_t *)"***log_data***\r\n\r\n",
 			  							strlen("***log_data***\r\n\r\n"),1000);
 #endif
-			  HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+			  //HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
 			  log_data(&gps, &hrtc);	// Saves data in SD
 			  GPSupdated = 0;
-			  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+			  //HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 			  //HAL_UART_Transmit(&huart3, (uint8_t *)"***__enable_irq***\r\n\r\n",
 			  //			  							strlen("***__enable_irq***\r\n\r\n"),1000);
